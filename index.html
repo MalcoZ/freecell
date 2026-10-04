@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FreeCell</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
 }
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
-html{height:100%;touch-action:manipulation;-webkit-text-size-adjust:100%;background:var(--base-bot);scroll-padding-top:env(safe-area-inset-top,0px)}
+html{height:100%;touch-action:manipulation;overscroll-behavior:none;-webkit-text-size-adjust:100%;background:var(--base-bot);scroll-padding-top:env(safe-area-inset-top,0px)}
 body{
   margin:0;height:100%;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none;color:var(--ink);
   font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -68,7 +68,7 @@ body{
 @keyframes tick{from{transform:translateY(45%);opacity:.15}to{transform:none;opacity:1}}
 
 /* table */
-.board{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.board{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;touch-action:pinch-zoom;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
 
 /* dock */
 .bar{
@@ -1147,7 +1147,13 @@ window.addEventListener('keydown', e => {
   else if (k === 'escape') clearSel();
 });
 
-['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+// stop iOS double-tap zoom on the table (pinching stays available)
+let lastTouchEnd = 0;
+board.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 350) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
 
 /* ---------- start ---------- */
 G = newState(randomSeed());
