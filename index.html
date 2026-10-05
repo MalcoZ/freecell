@@ -277,7 +277,7 @@ details.how p{font-size:14px;margin:6px 0 0}
       <p>Tap a card once and it moves to the best spot: a foundation first, then a matching column, then a free cell. To choose the spot yourself, drag the card or run of cards. Moving a run needs enough free cells and empty columns.</p>
     </details>
     <button class="btn soft close" id="btnClose" type="button">Close</button>
-    <p class="ver">Version 9</p>
+    <p class="ver">Version 10</p>
   </section>
   <section id="winDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="winTitle" hidden>
     <h2 id="winTitle">Solved</h2>
@@ -424,8 +424,9 @@ function layout(extraBoost) {
   const rowGap = small ? 12 : 24;
   const maxLen = Math.max(1, ...G.cols.map(c => c.length));
   let cw = Math.min(100, (W - 2 * pad - 7 * g) / 8);
-  // shrink the cards when columns get long, so every card's number stays fully visible
-  cw = Math.min(cw, (H - 2 * pad - rowGap) / (2 + 0.32 * (Math.max(7, maxLen) - 1)) / RATIO);
+  // size cards once for a full 13-card column, so they keep the same size all game
+  // (only an unusually long column of 14+ cards makes them smaller)
+  cw = Math.min(cw, (H - 2 * pad - rowGap) / (2 + 0.32 * (Math.max(13, maxLen) - 1)) / RATIO);
   cw = Math.max(cw, 24);
   const ch = cw * RATIO;
   const x0 = (W - (8 * cw + 7 * g)) / 2;
