@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>FreeCell</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,6 +43,7 @@
   --sh:rgba(0,0,0,.55); --scrim:rgba(0,0,0,.55); --panel:#1c1f26;
 }
 *,*::before,*::after{box-sizing:border-box}
+*{touch-action:manipulation;-webkit-touch-callout:none}
 [hidden]{display:none!important}
 html{height:100%;touch-action:manipulation;overscroll-behavior:none;-webkit-text-size-adjust:100%;background:var(--base-bot);scroll-padding-top:env(safe-area-inset-top,0px)}
 body{
@@ -68,7 +69,7 @@ body{
 @keyframes tick{from{transform:translateY(45%);opacity:.15}to{transform:none;opacity:1}}
 
 /* table */
-.board{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;touch-action:pinch-zoom;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+.board{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
 
 /* dock */
 .bar{
@@ -96,7 +97,7 @@ body{
 .btn.soft:hover{filter:brightness(1.1)}
 
 /* cards */
-.card,.slot{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.12)}
+.card,.slot{touch-action:none;position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.12)}
 .slot{background:var(--slot-bg);border:1px solid var(--slot-line);color:var(--slot-line);display:grid;place-items:center;z-index:0;transition:background .25s,border-color .25s,box-shadow .25s}
 .slot svg{width:42%;height:auto;aspect-ratio:1;fill:currentColor;opacity:.9}
 .slot.found{color:var(--ink-soft)}
@@ -169,6 +170,7 @@ body{
 .stats div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:16px;background:var(--slot-bg);border:1px solid var(--glass-line)}
 .stats dt{font-size:12.5px;font-weight:600;color:var(--ink-soft)}
 .stats dd{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ver{margin:12px 0 0;text-align:center;font-size:12.5px;color:var(--ink-soft)}
 details.how{margin-bottom:16px;font-size:14px;line-height:1.55}
 details.how summary{cursor:pointer;font-weight:700;padding:6px 0}
 details.how p{font-size:14px;margin:6px 0 0}
@@ -275,6 +277,7 @@ details.how p{font-size:14px;margin:6px 0 0}
       <p>Tap a card once and it moves to the best spot: a foundation first, then a matching column, then a free cell. To choose the spot yourself, drag the card or run of cards. Moving a run needs enough free cells and empty columns.</p>
     </details>
     <button class="btn soft close" id="btnClose" type="button">Close</button>
+    <p class="ver">Version 9</p>
   </section>
   <section id="winDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="winTitle" hidden>
     <h2 id="winTitle">Solved</h2>
@@ -419,14 +422,15 @@ function layout(extraBoost) {
   const pad = small ? 5 : 18;
   const g = small ? 5 : Math.max(10, W * 0.012);
   const rowGap = small ? 12 : 24;
+  const maxLen = Math.max(1, ...G.cols.map(c => c.length));
   let cw = Math.min(100, (W - 2 * pad - 7 * g) / 8);
-  cw = Math.min(cw, (H - 2 * pad - rowGap) / 3.6 / RATIO);
+  // shrink the cards when columns get long, so every card's number stays fully visible
+  cw = Math.min(cw, (H - 2 * pad - rowGap) / (2 + 0.32 * (Math.max(7, maxLen) - 1)) / RATIO);
   cw = Math.max(cw, 24);
   const ch = cw * RATIO;
   const x0 = (W - (8 * cw + 7 * g)) / 2;
   const colY = pad + ch + rowGap;
   const colX = i => x0 + i * (cw + g);
-  const maxLen = Math.max(1, ...G.cols.map(c => c.length));
   let off = ch * 0.32;
   if (maxLen > 1) off = Math.max(ch * 0.1, Math.min(off, (H - pad - colY - ch) / (maxLen - 1)));
   geo = { cw, ch };
@@ -1147,11 +1151,19 @@ window.addEventListener('keydown', e => {
   else if (k === 'escape') clearSel();
 });
 
-// stop iOS double-tap zoom on the table (pinching stays available)
+// Page-wide guard against double-tap zoom (Safari and Firefox on iPhone).
+// A second tap within 380ms has its zoom cancelled; buttons still get their click.
 let lastTouchEnd = 0;
-board.addEventListener('touchend', e => {
+document.addEventListener('touchend', e => {
   const now = Date.now();
-  if (now - lastTouchEnd < 350) e.preventDefault();
+  if (now - lastTouchEnd < 380 && e.changedTouches.length === 1) {
+    const el = e.target;
+    if (!(el.closest && el.closest('input'))) {
+      e.preventDefault();
+      const btn = el.closest && el.closest('button, summary, label');
+      if (btn) btn.click();
+    }
+  }
   lastTouchEnd = now;
 }, { passive: false });
 
