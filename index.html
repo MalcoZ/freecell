@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"><!-- build 27 -->
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FreeCell">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>FreeCell</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,8 +17,8 @@
   --base-top:#f1f2f5; --base-bot:#f1f2f5; --pat:rgba(17,20,30,.085);
   --glass:#ffffff; --glass-line:rgba(17,20,30,.09); --chip:#ffffff;
   --ink:#14161d; --ink-soft:#6a7080;
-  --slot-bg:rgba(17,20,30,.035); --slot-line:rgba(17,20,30,.13);
-  --card:#ffffff; --card-edge:rgba(17,20,30,.14); --red:#d93047; --black:#14161d;
+  --slot-bg:rgba(255,255,255,.3); --slot-line:rgba(17,20,30,.13);
+  --card:#ffffff; --card-edge:rgba(17,20,30,.12); --red:#d93047; --black:#14161d; --glass-a:rgba(255,255,255,.56); --grain:.28;
   --accent:#2f5bea; --accent-soft:rgba(47,91,234,.16); --accent-ink:#ffffff;
   --sh:rgba(17,20,30,.22); --scrim:rgba(17,20,30,.40); --panel:#ffffff;
   --ease:cubic-bezier(.4,0,.1,1);
@@ -26,9 +30,9 @@
   :root:not([data-theme="light"]){
     --base-top:#13151a; --base-bot:#13151a; --pat:rgba(255,255,255,.07);
     --glass:#1c1f26; --glass-line:rgba(255,255,255,.08); --chip:#1c1f26;
-    --ink:#eceef3; --ink-soft:#8f95a6;
-    --slot-bg:rgba(255,255,255,.03); --slot-line:rgba(255,255,255,.11);
-    --card:#f7f7fa; --card-edge:rgba(0,0,0,.18); --red:#e0364b; --black:#14161d;
+    --ink:#f1f3f7; --ink-soft:#aab1c2;
+    --slot-bg:rgba(255,255,255,.09); --slot-line:rgba(255,255,255,.26);
+    --card:#30353f; --card-edge:rgba(255,255,255,.18); --red:#ff6b7d; --black:#eef0f5; --glass-a:rgba(24,27,36,.54); --grain:.32;
     --accent:#7a9bff; --accent-soft:rgba(122,155,255,.22); --accent-ink:#0b1020;
     --sh:rgba(0,0,0,.55); --scrim:rgba(0,0,0,.55); --panel:#1c1f26;
   }
@@ -36,15 +40,16 @@
 :root[data-theme="dark"]{
   --base-top:#13151a; --base-bot:#13151a; --pat:rgba(255,255,255,.07);
   --glass:#1c1f26; --glass-line:rgba(255,255,255,.08); --chip:#1c1f26;
-  --ink:#eceef3; --ink-soft:#8f95a6;
-  --slot-bg:rgba(255,255,255,.03); --slot-line:rgba(255,255,255,.11);
-  --card:#f7f7fa; --card-edge:rgba(0,0,0,.18); --red:#e0364b; --black:#14161d;
+  --ink:#f1f3f7; --ink-soft:#aab1c2;
+  --slot-bg:rgba(255,255,255,.09); --slot-line:rgba(255,255,255,.26);
+  --card:#30353f; --card-edge:rgba(255,255,255,.18); --red:#ff6b7d; --black:#eef0f5; --glass-a:rgba(24,27,36,.54); --grain:.32;
   --accent:#7a9bff; --accent-soft:rgba(122,155,255,.22); --accent-ink:#0b1020;
   --sh:rgba(0,0,0,.55); --scrim:rgba(0,0,0,.55); --panel:#1c1f26;
 }
 *,*::before,*::after{box-sizing:border-box}
 *{touch-action:manipulation;-webkit-touch-callout:none}
 [hidden]{display:none!important}
+html.zoomed,html.zoomed *{touch-action:auto!important}
 html{height:100%;touch-action:manipulation;overscroll-behavior:none;-webkit-text-size-adjust:100%;background:var(--base-bot);scroll-padding-top:env(safe-area-inset-top,0px)}
 body{
   margin:0;height:100%;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none;color:var(--ink);
@@ -52,7 +57,8 @@ body{
   background:var(--base-bot);
   -webkit-tap-highlight-color:transparent;
 }
-.bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+.bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;filter:blur(34px);transform:scale(1.1)}
+.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--grain);mix-blend-mode:overlay}
 .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 
 /* top bar */
@@ -61,7 +67,7 @@ body{
 .hud{display:flex;gap:6px}
 .chip{
   display:inline-flex;align-items:baseline;gap:4px;padding:6px 11px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink-soft);
-  background:var(--chip);border:1px solid var(--glass-line);
+  background:var(--glass-a);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--glass-line);
   font-variant-numeric:tabular-nums;white-space:nowrap;
 }
 .chip b{display:inline-block;color:var(--ink);font-weight:700}
@@ -74,7 +80,7 @@ body{
 /* dock */
 .bar{
   display:flex;gap:4px;margin:6px 12px 12px;padding:5px;border-radius:26px;align-self:center;width:calc(100% - 24px);max-width:460px;
-  background:var(--glass);border:1px solid var(--glass-line);
+  background:var(--glass-a);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--glass-line);
   box-shadow:0 8px 24px -14px var(--sh);
 }
 .btn{
@@ -119,8 +125,9 @@ body{
 .idx svg{width:.8em;height:.8em;fill:currentColor}
 .p{position:absolute;height:auto;aspect-ratio:1;fill:currentColor;transform:translate(-50%,-50%)}
 .p.f{transform:translate(-50%,-50%) rotate(180deg)}
-.face{position:absolute;left:14%;right:14%;top:37%;bottom:6%;border:1px solid currentColor;border-radius:calc(var(--cw)*.07);background:color-mix(in srgb,currentColor 7%,transparent);overflow:hidden}
-.face .art{position:absolute;inset:0;width:100%;height:100%}
+.face{position:absolute;left:12%;right:12%;top:36%;bottom:5%;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:calc(var(--cw)*.08);background:color-mix(in srgb,currentColor 6%,transparent);overflow:hidden}
+.ace-ring{position:absolute;left:50%;top:67.5%;width:calc(var(--cw)*.74);height:calc(var(--cw)*.74);transform:translate(-50%,-50%);border-radius:50%;background:color-mix(in srgb,currentColor 7%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,currentColor 22%,transparent)}
+.face .art{position:absolute;inset:0;width:100%;height:100%;display:block}
 .face .fs{position:absolute;left:6%;top:5%;width:24%;height:auto;aspect-ratio:1;fill:currentColor}
 .card.drag{transition:none!important;scale:1.05;box-shadow:0 0 0 1px var(--card-edge),0 16px 30px -4px var(--sh);cursor:grabbing}
 .card.target{box-shadow:0 0 0 3px var(--accent),0 2px 5px var(--sh)}
@@ -133,14 +140,33 @@ body{
 .shake{animation:shake .32s var(--ease)}
 @keyframes shake{20%{translate:-5px 0}45%{translate:5px 0}70%{translate:-3px 0}100%{translate:0 0}}
 
+/* game review */
+.rcard{position:absolute;left:12px;right:12px;bottom:82px;margin:0 auto;max-width:460px;background:var(--glass);color:var(--ink);border:1px solid var(--glass-line);border-radius:20px;padding:14px 16px;box-shadow:0 14px 34px -16px var(--sh);z-index:5;animation:rise .5s var(--ease)}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rnum{font-size:13px;font-weight:600;color:var(--ink-soft)}
+.rcard h3{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.rcard p{margin:6px 0 0;font-size:14px;line-height:1.45;color:var(--ink-soft)}
+.rcard p b{color:var(--ink);font-weight:700}
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:800;color:#fff;background:var(--bc)}
+.acc{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:4px}
+.tally{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tally span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--slot-bg)}
+.tally i{width:8px;height:8px;border-radius:50%;background:var(--bc)}
+.prog{height:4px;border-radius:4px;background:var(--slot-bg);overflow:hidden;margin-top:10px}
+.prog b{display:block;height:100%;background:var(--accent);transition:width .3s var(--ease)}
+.card.rv{box-shadow:0 0 0 3px var(--rvc),0 2px 5px var(--sh)}
+.btn.thinking svg{animation:think 1s ease-in-out infinite}
+@keyframes think{50%{opacity:.25}}
+
 /* toast */
 .toast{
   position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);transform:translate(-50%,10px) scale(.98);
-  background:var(--glass);color:var(--ink);border:1px solid var(--glass-line);border-radius:999px;
+  background:var(--glass-a);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);color:var(--ink);border:1px solid var(--glass-line);border-radius:999px;
   padding:11px 18px;font-size:14px;font-weight:600;box-shadow:0 12px 30px -10px var(--sh);
-  opacity:0;pointer-events:none;transition:opacity .4s var(--ease),transform .55s var(--ease);max-width:calc(100% - 32px);text-align:center;z-index:50;
+  opacity:0;pointer-events:none;transition:opacity .4s var(--ease),transform .55s var(--ease);max-width:calc(100% - 32px);text-align:center;z-index:200;
 }
 .toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+body.reviewing .toast{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 62px)}
 
 /* dialogs */
 .scrim{
@@ -170,6 +196,30 @@ body{
 .stats div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:16px;background:var(--slot-bg);border:1px solid var(--glass-line)}
 .stats dt{font-size:12.5px;font-weight:600;color:var(--ink-soft)}
 .stats dd{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.lbrows{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:6px}
+.lbrows li{display:grid;grid-template-columns:28px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--slot-bg);border:1px solid var(--glass-line);font-size:15px}
+.lbrows li.mine{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.lbrank{font-weight:800;color:var(--ink-soft)}
+.lbname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbmoves{font-weight:700;font-variant-numeric:tabular-nums}
+.lbtime{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.lbnote{font-size:14px;color:var(--ink-soft);margin:0 0 14px}
+.row input[type=text]{width:150px}
+.daily{margin:0 0 18px;padding:14px;border-radius:18px;background:var(--slot-bg);border:1px solid var(--glass-line)}
+.daily .btn{width:100%}
+.dailystatus{margin:10px 2px 0!important;font-size:14px!important}
+.sharebox{display:flex;gap:8px;margin-bottom:16px}
+.chmsg{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;font:600 16px 'Manrope',system-ui,sans-serif;color:var(--ink);background:var(--slot-bg);border:1px solid var(--glass-line);border-radius:14px;padding:11px 13px;min-height:46px;-webkit-user-select:text;user-select:text}
+.chmsg::placeholder{color:var(--ink-soft);font-weight:500}
+.sharebox input{flex:1;min-width:0;font:600 16px 'Manrope',system-ui,sans-serif;color:var(--ink);background:var(--slot-bg);border:1px solid var(--glass-line);border-radius:14px;padding:10px 12px;min-height:46px;-webkit-user-select:text;user-select:text}
+.dealchip{font:inherit;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.dealchip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.diffrow{margin:0 0 8px}
+.difftext{margin:0 0 14px!important;color:var(--ink)!important;font-weight:600}
+.facts{margin:0 0 16px;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.facts li{padding:10px 12px;border-radius:14px;background:var(--slot-bg);border:1px solid var(--glass-line);font-size:15px;line-height:1.45}
+.meter{height:8px;border-radius:8px;background:var(--slot-bg);border:1px solid var(--glass-line);overflow:hidden;margin:0 0 16px}
+.meter b{display:block;height:100%;width:0;background:var(--accent);transition:width .08s linear}
 .ver{margin:12px 0 0;text-align:center;font-size:12.5px;color:var(--ink-soft)}
 details.how{margin-bottom:16px;font-size:14px;line-height:1.55}
 details.how summary{cursor:pointer;font-weight:700;padding:6px 0}
@@ -226,22 +276,32 @@ details.how p{font-size:14px;margin:6px 0 0}
 </svg>
 
 <canvas id="bg" class="bgfx" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
 
 <div class="app">
   <header class="top">
     <h1>FreeCell</h1>
     <div class="hud">
-      <span class="chip" title="Deal number"><b id="dealNo">#–</b></span>
+      <button class="chip dealchip" id="dealChip" type="button" title="About this deal"><b id="dealNo">#–</b></button>
       <span class="chip"><b id="moves">0</b> moves</span>
       <span class="chip"><b id="time">0:00</b></span>
     </div>
   </header>
   <main id="board" class="board" aria-label="FreeCell table"></main>
-  <nav class="bar" aria-label="Game controls">
+  <nav class="bar" id="mainBar" aria-label="Game controls">
     <button class="btn" id="undo" type="button" title="Undo (U)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Undo</button>
     <button class="btn" id="hint" type="button" title="Hint (H)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-3.6 11.9c.7.5 1.1 1.2 1.1 2.1h5c0-.9.4-1.6 1.1-2.1A6.5 6.5 0 0 0 12 2.5z"/></svg>Hint</button>
     <button class="btn" id="scene" type="button" title="Randomize background (B)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>Scene</button>
     <button class="btn" id="menu" type="button" title="Menu (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu</button>
+  </nav>
+  <div id="rcard" class="rcard" hidden aria-live="polite"></div>
+  <nav class="bar" id="reviewBar" aria-label="Review controls" hidden>
+    <button class="btn" id="rvFirst" type="button" title="Start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M18 6l-8 6 8 6V6z"/></svg></button>
+    <button class="btn" id="rvPrev" type="button" title="Previous move (←)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button class="btn" id="rvPlay" type="button" title="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7V5z"/></svg></button>
+    <button class="btn" id="rvNext" type="button" title="Next move (→)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="btn" id="rvLast" type="button" title="End"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14M6 6l8 6-8 6V6z"/></svg></button>
+    <button class="btn" id="rvDone" type="button">Done</button>
   </nav>
 </div>
 
@@ -250,9 +310,16 @@ details.how p{font-size:14px;margin:6px 0 0}
 <div id="scrim" class="scrim" hidden>
   <section id="menuDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
     <h2 id="menuTitle">Menu</h2>
+    <div class="daily">
+      <button class="btn solid" id="btnDaily" type="button">Play today’s deal</button>
+      <p id="dailyStatus" class="dailystatus"></p>
+    </div>
     <div class="actions">
-      <button class="btn solid" id="btnNew" type="button">New deal</button>
+      <button class="btn soft" id="btnNew" type="button">New deal</button>
       <button class="btn soft" id="btnRestart" type="button">Restart this deal</button>
+      <button class="btn soft" id="btnReview" type="button">Review this game</button>
+      <button class="btn soft" id="btnInfo" type="button">About this deal</button>
+      <button class="btn soft needs-api" id="btnBoard" type="button">Leaderboard for this deal</button>
     </div>
     <div class="row">
       <span>Play deal number</span>
@@ -267,25 +334,67 @@ details.how p{font-size:14px;margin:6px 0 0}
         <button type="button" data-theme-opt="auto">Auto</button>
       </div>
     </div>
+    <div class="row">
+      <span>Your name</span>
+      <input id="nameInput" type="text" maxlength="20" placeholder="Player" autocomplete="nickname" aria-label="Your name for challenges and the leaderboard">
+    </div>
     <label class="check"><input type="checkbox" id="optAuto"><span>Send safe cards to the foundations automatically</span></label>
+    <div class="row">
+      <label class="check" style="margin:0;flex:1"><input type="checkbox" id="optSound"><span>Sounds</span></label>
+      <button class="btn soft" id="btnMySound" type="button">Record your own</button>
+      <button class="btn soft" id="btnSoundReset" type="button" hidden>Use default</button>
+    </div>
     <dl class="stats" id="statsList"></dl>
     <details class="how">
       <summary>How to play</summary>
       <p>Move every card to the four foundations at the top right, building each suit from Ace up to King.</p>
       <p>On the table, stack cards downward in alternating colors. The four free cells at top left each hold one card.</p>
+      <p>Moves make a soft pop. You can record your own sound in the Menu instead; it stays on this device.</p>
+      <p>Today’s deal is the same for everyone on the same date, so you can compare scores with friends. Solve it on consecutive days to build a daily streak.</p>
+      <p>Your score starts at 10,000 and drops 40 points per move and 2 points per second, so one move costs the same as 20 seconds. Fewer moves matter most.</p>
+      <p>Review replays your game move by move and rates each move, like a chess review, with a better option where there was one. Hints always follow a line that leads to a win. Your moves stay on this device and are forgotten when you start a new deal.</p>
       <p>The Scene button randomizes the animated background: new colors and new shapes every time.</p>
       <p>Tap a card once and it moves to the best spot: a foundation first, then a matching column, then a free cell. To choose the spot yourself, drag the card or run of cards. Moving a run needs enough free cells and empty columns.</p>
     </details>
     <button class="btn soft close" id="btnClose" type="button">Close</button>
-    <p class="ver">Version 10</p>
   </section>
   <section id="winDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="winTitle" hidden>
     <h2 id="winTitle">Solved</h2>
     <p id="winText"></p>
+    <input id="chMsg" class="chmsg" type="text" maxlength="80" placeholder="Add a message to your challenge (optional)" aria-label="Challenge message">
     <div class="actions">
       <button class="btn solid" id="btnWinNew" type="button">New deal</button>
+      <button class="btn soft" id="btnChallenge" type="button">Challenge a friend</button>
+      <button class="btn soft" id="btnWinDaily" type="button" hidden>Play today’s deal</button>
+      <button class="btn soft needs-api" id="btnWinBoard" type="button">Leaderboard</button>
+      <button class="btn soft" id="btnWinReview" type="button">Review game</button>
       <button class="btn soft" id="btnWinReplay" type="button">Replay this deal</button>
     </div>
+      <div id="shareBox" class="sharebox" hidden>
+      <input id="shareUrl" type="text" readonly aria-label="Challenge link">
+      <button class="btn soft" id="btnCopy" type="button">Copy</button>
+    </div>
+  </section>
+  <section id="recDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="recTitle" hidden>
+    <h2 id="recTitle">Record your own sound</h2>
+    <p id="recText"></p>
+    <div class="meter" aria-hidden="true"><b id="recMeter"></b></div>
+    <div class="actions">
+      <button class="btn solid" id="btnRec" type="button">Record</button>
+      <button class="btn soft" id="btnRecPlay" type="button" hidden>Play it</button>
+      <button class="btn soft" id="btnRecUse" type="button" hidden>Use this sound</button>
+    </div>
+    <button class="btn soft close" id="btnRecSkip" type="button">Not now</button>
+  </section>
+  <section id="infoDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="infoTitle" hidden>
+    <h2 id="infoTitle">About this deal</h2>
+    <div id="infoBody"></div>
+    <button class="btn soft close" id="infoClose" type="button">Close</button>
+  </section>
+  <section id="lbDlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="lbTitle" hidden>
+    <h2 id="lbTitle">Leaderboard</h2>
+    <div id="lbList" class="lb"></div>
+    <button class="btn soft close" id="lbClose" type="button">Close</button>
   </section>
 </div>
 
@@ -302,6 +411,9 @@ const suit = id => Math.floor(id / 13);
 const isRed = id => { const s = suit(id); return s === 1 || s === 2; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Score: start at 10,000, lose 40 points per move and 2 per second (so one move costs the same as 20 seconds).
+const scoreOf = (moves, secs) => Math.max(100, Math.round(10000 - 40 * moves - 2 * secs));
+const fmtScore = n => n.toLocaleString('en-US');
 const fmt = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 const cancelAnims = el => { try { el.getAnimations().forEach(a => a.cancel()); } catch (e) {} };
 
@@ -309,8 +421,8 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-let stats = Object.assign({ played: 0, won: 0, streak: 0, bestMoves: null, bestTime: null }, store.get('fc:stats', {}));
-let settings = Object.assign({ auto: true, theme: 'light' }, store.get('fc:settings', {}));
+let stats = Object.assign({ played: 0, won: 0, streak: 0, bestMoves: null, bestTime: null, bestScore: null }, store.get('fc:stats', {}));
+let settings = Object.assign({ auto: true, theme: 'light', sound: true, name: '' }, store.get('fc:settings', {}));
 
 function mulberry32(a) {
   return function () {
@@ -333,18 +445,185 @@ function dealCols(seed) {
   return cols;
 }
 
+/* ---------- FreeCell solver ----------
+   State: { cols: [[ids]...8], cells: [id|null x4], found: [n,n,n,n] }  (found = cards on each suit's foundation)
+   Move:  { ft:'col'|'cell', fi, n, tt:'col'|'cell'|'found', ti, card }
+   Best-first search with a card-position heuristic. Safe cards go to the foundations automatically after
+   every move, the same rule the game uses. Positions in `exclude` are never entered, so a hint can never
+   lead back to a position the player has already been in. */
+const S_rank = id => id % 13 + 1, S_suit = id => (id / 13) | 0;
+const S_red = id => { const s = S_suit(id); return s === 1 || s === 2; };
+const S_stacks = (upper, lower) => S_rank(upper) === S_rank(lower) + 1 && S_red(upper) !== S_red(lower);
+
+function sHash(s) {
+  const cols = s.cols.map(c => String.fromCharCode(...c.map(x => x + 48))).sort().join('|');
+  const cells = s.cells.filter(x => x != null).sort((a, b) => a - b).map(x => String.fromCharCode(x + 48)).join('');
+  return s.found.join(',') + '/' + cells + '/' + cols;
+}
+function sClone(s) { return { cols: s.cols.slice(), cells: s.cells.slice(), found: s.found.slice() }; }
+function sCanFound(s, id) { return s.found[S_suit(id)] === S_rank(id) - 1; }
+function sSafe(s, id) {
+  const r = S_rank(id);
+  if (!sCanFound(s, id)) return false;
+  if (r <= 2) return true;
+  const opp = S_red(id) ? [0, 3] : [1, 2];
+  return s.found[opp[0]] >= r - 1 && s.found[opp[1]] >= r - 1;
+}
+// apply safe foundation moves until none are left (mutates s; columns must already be private copies where changed)
+function sAuto(s) {
+  let moved = true;
+  while (moved) {
+    moved = false;
+    for (let i = 0; i < 8; i++) {
+      const c = s.cols[i];
+      if (c.length && sSafe(s, c[c.length - 1])) { const id = c[c.length - 1]; s.cols[i] = c.slice(0, -1); s.found[S_suit(id)]++; moved = true; }
+    }
+    for (let j = 0; j < 4; j++) {
+      const id = s.cells[j];
+      if (id != null && sSafe(s, id)) { s.cells[j] = null; s.found[S_suit(id)]++; moved = true; }
+    }
+  }
+  return s;
+}
+function sCap(s, toEmpty) {
+  let free = 0, empty = 0;
+  for (const x of s.cells) if (x == null) free++;
+  for (const c of s.cols) if (!c.length) empty++;
+  if (toEmpty) empty--;
+  return (free + 1) * Math.pow(2, Math.max(0, empty));
+}
+function sRunLen(c) {
+  let n = c.length ? 1 : 0;
+  for (let k = c.length - 1; k > 0 && S_stacks(c[k - 1], c[k]); k--) n++;
+  return n;
+}
+function sMoves(s) {
+  const out = [];
+  const freeCell = s.cells.indexOf(null);
+  const firstEmpty = s.cols.findIndex(c => !c.length);
+  // to foundation
+  for (let i = 0; i < 8; i++) { const c = s.cols[i]; if (c.length && sCanFound(s, c[c.length - 1])) out.push({ ft: 'col', fi: i, n: 1, tt: 'found', ti: S_suit(c[c.length - 1]), card: c[c.length - 1] }); }
+  for (let j = 0; j < 4; j++) { const id = s.cells[j]; if (id != null && sCanFound(s, id)) out.push({ ft: 'cell', fi: j, n: 1, tt: 'found', ti: S_suit(id), card: id }); }
+  // free cell -> column
+  for (let j = 0; j < 4; j++) {
+    const id = s.cells[j]; if (id == null) continue;
+    for (let t = 0; t < 8; t++) {
+      const c = s.cols[t];
+      if (c.length ? S_stacks(c[c.length - 1], id) : t === firstEmpty) out.push({ ft: 'cell', fi: j, n: 1, tt: 'col', ti: t, card: id });
+    }
+  }
+  // column -> column (runs)
+  for (let i = 0; i < 8; i++) {
+    const c = s.cols[i]; if (!c.length) continue;
+    const run = sRunLen(c);
+    for (let t = 0; t < 8; t++) {
+      if (t === i) continue;
+      const d = s.cols[t];
+      if (d.length) {
+        const top = d[d.length - 1];
+        for (let n = 1; n <= run; n++) {
+          if (S_stacks(top, c[c.length - n])) { if (n <= sCap(s, false)) out.push({ ft: 'col', fi: i, n, tt: 'col', ti: t, card: c[c.length - n] }); break; }
+        }
+      } else if (t === firstEmpty) {
+        const n = Math.min(run, sCap(s, true));
+        if (n < c.length) out.push({ ft: 'col', fi: i, n, tt: 'col', ti: t, card: c[c.length - n] });
+        if (n > 1 && c.length > 1) out.push({ ft: 'col', fi: i, n: 1, tt: 'col', ti: t, card: c[c.length - 1] });
+      }
+    }
+  }
+  // column -> free cell
+  if (freeCell >= 0) for (let i = 0; i < 8; i++) { const c = s.cols[i]; if (c.length) out.push({ ft: 'col', fi: i, n: 1, tt: 'cell', ti: freeCell, card: c[c.length - 1] }); }
+  return out;
+}
+function sApply(s, m) {
+  const r = sClone(s);
+  let cards;
+  if (m.ft === 'col') { const c = r.cols[m.fi]; cards = c.slice(c.length - m.n); r.cols[m.fi] = c.slice(0, c.length - m.n); }
+  else { cards = [r.cells[m.fi]]; r.cells[m.fi] = null; }
+  if (m.tt === 'col') r.cols[m.ti] = r.cols[m.ti].concat(cards);
+  else if (m.tt === 'cell') r.cells[m.ti] = cards[0];
+  else r.found[m.ti]++;
+  return r;
+}
+function sHeur(s) {
+  let F = 0; for (const f of s.found) F += f;
+  let h = (52 - F) * 3;
+  for (let su = 0; su < 4; su++) {
+    if (s.found[su] >= 13) continue;
+    const id = su * 13 + s.found[su];
+    for (const c of s.cols) { const p = c.indexOf(id); if (p >= 0) { h += (c.length - 1 - p) * 2; break; } }
+  }
+  for (const c of s.cols) { for (let k = 1; k < c.length; k++) if (!S_stacks(c[k - 1], c[k])) h += 1; }
+  for (const x of s.cells) if (x != null) h += 1;
+  for (const c of s.cols) if (!c.length) h -= 2;
+  return h;
+}
+const sWon = s => s.found[0] + s.found[1] + s.found[2] + s.found[3] === 52;
+
+// time-sliced solver: call .run(ms) until it returns { done:true }
+function createSolver(start, opts = {}) {
+  const maxNodes = opts.maxNodes || 12000, gw = opts.gw || 0.35;
+  const nodes = [{ s: start, p: -1, m: null, g: 0 }];
+  const heap = [[sHeur(start), 0]];
+  const seen = new Set(opts.exclude || []);
+  seen.add(sHash(start));
+  let expanded = 0;
+  const push = (f, i) => { heap.push([f, i]); let k = heap.length - 1; while (k > 0) { const p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; [heap[p], heap[k]] = [heap[k], heap[p]]; k = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } } return top[1]; };
+  const path = i => { const moves = [], states = []; while (nodes[i].p >= 0) { moves.push(nodes[i].m); states.push(nodes[i].s); i = nodes[i].p; } return { moves: moves.reverse(), states: states.reverse() }; };
+  return {
+    run(ms) {
+      const end = Date.now() + ms;
+      while (heap.length) {
+        if (expanded >= maxNodes) return { done: true, sol: null, exhausted: false, nodes: expanded };
+        if (Date.now() > end) return { done: false };
+        const ni = pop(), node = nodes[ni];
+        if (sWon(node.s)) return { done: true, sol: path(ni), nodes: expanded };
+        expanded++;
+        for (const m of sMoves(node.s)) {
+          const s2 = sAuto(sApply(node.s, m));
+          const h = sHash(s2);
+          if (seen.has(h)) continue;
+          seen.add(h);
+          nodes.push({ s: s2, p: ni, m, g: node.g + 1 });
+          push(sHeur(s2) + gw * (node.g + 1), nodes.length - 1);
+        }
+      }
+      return { done: true, sol: null, exhausted: true, nodes: expanded };
+    }
+  };
+}
+
 /* ---------- state ---------- */
 let G;
 function newState(seed) {
   return { seed, cols: dealCols(seed), cells: [null, null, null, null], found: [[], [], [], []],
-           moves: 0, hist: [], started: false, won: false, t0: 0, elapsed: 0, last: null };
+           moves: 0, hist: [], started: false, won: false, t0: 0, elapsed: 0, last: null, plan: null, full: [], challenge: null };
 }
 const snap = () => JSON.stringify({ cols: G.cols, cells: G.cells, found: G.found });
+const stateFromG = () => ({ cols: G.cols.map(c => c.slice()), cells: G.cells.slice(), found: G.found.map(p => p.length) });
+const stateFromSnap = str => { const o = JSON.parse(str); return { cols: o.cols, cells: o.cells, found: o.found.map(p => p.length) }; };
+const gHash = () => sHash(stateFromG());
+const SUIT_CH = ['\u2660\uFE0E', '\u2665\uFE0E', '\u2666\uFE0E', '\u2663\uFE0E'];
+const cardName = id => ['A','2','3','4','5','6','7','8','9','10','J','Q','K'][id % 13] + SUIT_CH[(id / 13) | 0];
+function describeMove(st, m) {
+  const what = m.n > 1 ? `${cardName(m.card)} and the ${m.n - 1} card${m.n > 2 ? 's' : ''} on it` : cardName(m.card);
+  let where;
+  if (m.tt === 'found') where = 'to its foundation';
+  else if (m.tt === 'cell') where = 'to a free cell';
+  else { const c = st.cols[m.ti]; where = c.length ? `onto ${cardName(c[c.length - 1])}` : 'to an empty column'; }
+  return `${what} ${where}`;
+}
+const solveAsync = (state, opts) => new Promise(res => {
+  const sv = createSolver(state, opts);
+  const step = () => { const r = sv.run(14); if (r.done) res(r); else setTimeout(step, 0); };
+  step();
+});
 
 const board = $('#board');
 const hudMoves = $('#moves'), hudTime = $('#time'), hudDeal = $('#dealNo');
 const undoBtn = $('#undo'), hintBtn = $('#hint');
-let busy = true, dealing = false, autoRuns = 0, sel = null, cur = null, motionScale = 1;
+let busy = true, dealing = false, autoRuns = 0, sel = null, cur = null, motionScale = 1, reviewing = false, RV = null, hintBusy = false;
 let hintT = null, winT = null, boostT = null, dealT = null, casc = false;
 const pos = [];
 let zones = { col: [], cell: [], found: [] };
@@ -379,6 +658,58 @@ const LAYOUT = {
   9: [['L', 0], ['R', 0], ['L', .333], ['R', .333], ['C', .5], ['L', .667], ['R', .667], ['L', 1], ['R', 1]],
   10: [['L', 0], ['R', 0], ['C', .167], ['L', .333], ['R', .333], ['L', .667], ['R', .667], ['C', .833], ['L', 1], ['R', 1]]
 };
+/* ---------- flat illustrated court cards ----------
+   Robe in the suit's color; trim, skin, hair and props vary by suit so every J, Q and K is distinct. */
+const C_SEC = ['#3f8f8a', '#e2a33a', '#3d6fd6', '#4f9a52'];
+const C_SKIN = ['#f0cfae', '#d9a77f', '#f3d6bd', '#9a6646'];
+const C_HAIR = ['#2a2320', '#7a3b22', '#d7a542', '#1d1a19'];
+const C_DIAMONDS = (() => {
+  let d = '';
+  for (let y = 4; y < 72; y += 8) for (let x = (y / 8) % 2 ? 8 : 4; x < 60; x += 8) d += `M${x} ${y - 1.6}l1.6 1.6-1.6 1.6-1.6-1.6z`;
+  return d;
+})();
+function courtSVG(r, s) {
+  const sec = C_SEC[s], skin = C_SKIN[s], hair = C_HAIR[s], gold = '#e3b341', ink = '#1b1b22', steel = '#c3cbd6';
+  const P = [];
+  P.push(`<path d="${C_DIAMONDS}" fill="currentColor" opacity=".09"/>`);
+  if (r === 12) P.push(`<path d="M19 32c-2 12-1 20 3 22.5l8-2.5 8 2.5c4-2.5 5-10.5 3-22.5 0-8.5-5-13.5-11-13.5s-11 5-11 13.5z" fill="${hair}"/>`);
+  // robe, vest and trim
+  P.push(`<path d="M3 72c0-15 11-23 27-23s27 8 27 23z" fill="currentColor"/>`);
+  if (r === 13) P.push(`<path d="M8 59c6-5.5 13-8 22-8s16 2.5 22 8l-2.4 3.4c-5.4-4.4-12-6.4-19.6-6.4s-14.2 2-19.6 6.4z" fill="#f4f1ea"/><g fill="${ink}"><circle cx="15" cy="58.6" r=".75"/><circle cx="22" cy="55.6" r=".75"/><circle cx="38" cy="55.6" r=".75"/><circle cx="45" cy="58.6" r=".75"/></g>`);
+  P.push(`<path d="M22 50.6l8 21.4 8-21.4c-2.6-.8-5.3-1.2-8-1.2s-5.4.4-8 1.2z" fill="${sec}"/>`);
+  P.push(`<path d="M15 53.5l15 10 15-10" fill="none" stroke="${gold}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`);
+  P.push(`<g fill="${gold}"><circle cx="30" cy="66.5" r="1.2"/><circle cx="30" cy="70.6" r="1.2"/><circle cx="11" cy="66" r="1"/><circle cx="49" cy="66" r="1"/><circle cx="7.5" cy="70.5" r="1"/><circle cx="52.5" cy="70.5" r="1"/></g>`);
+  // neck and head
+  P.push(`<path d="M26 41h8v8.5c-2.6 1.6-5.4 1.6-8 0z" fill="${skin}"/><path d="M26 44.5c2.7 1.3 5.3 1.3 8 0V42h-8z" fill="${ink}" opacity=".13"/>`);
+  P.push(`<ellipse cx="20.6" cy="32.2" rx="1.7" ry="2.5" fill="${skin}"/><ellipse cx="39.4" cy="32.2" rx="1.7" ry="2.5" fill="${skin}"/>`);
+  P.push(`<ellipse cx="30" cy="31" rx="9.5" ry="11" fill="${skin}"/>`);
+  if (r === 11) P.push(`<path d="M20.5 30c-.5-7 3.8-11.5 9.5-11.5s10 4.5 9.5 11.5c-1.6-2.8-4-4.6-6.8-5.4-3.6 2.3-8 3.2-12.2 5.4z" fill="${hair}"/>`);
+  if (r === 12) P.push(`<path d="M20.6 29.5c1-6.2 4.6-9.8 9.4-9.8s8.4 3.6 9.4 9.8c-3.4-3.3-7.6-4.6-12-3.8-2.3.6-4.6 1.9-6.8 3.8z" fill="${hair}"/>`);
+  if (r === 13) {
+    P.push(`<path d="M20.6 31c-.6-7.5 3.6-12 9.4-12s10 4.5 9.4 12c-.8-3-2.2-5-4-6.2-3.6 1-7.4 1-10.8 0-1.8 1.2-3.2 3.2-4 6.2z" fill="${hair}"/>`);
+    P.push(`<path d="M20.8 33c0 9 4 14.2 9.2 14.2s9.2-5.2 9.2-14.2c-2 3.6-5.2 5.4-9.2 5.4s-7.2-1.8-9.2-5.4z" fill="${hair}"/>`);
+  }
+  // face
+  P.push(`<g fill="${ink}"><ellipse cx="26.3" cy="31.6" rx="1.25" ry="1.45"/><ellipse cx="33.7" cy="31.6" rx="1.25" ry="1.45"/></g><g fill="#fff"><circle cx="26.7" cy="31.1" r=".4"/><circle cx="34.1" cy="31.1" r=".4"/></g>`);
+  P.push(`<path d="M24.3 28.4q2-1.2 4 0M31.7 28.4q2-1.2 4 0" stroke="${hair}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`);
+  P.push(`<path d="M30 32.6v3.2l-1.2.6" stroke="${ink}" stroke-opacity=".35" stroke-width=".9" fill="none" stroke-linecap="round"/>`);
+  P.push(`<g fill="#ff7a7a" opacity=".22"><circle cx="24.6" cy="36" r="2"/><circle cx="35.4" cy="36" r="2"/></g>`);
+  if (r === 11) P.push(`<path d="M27.2 38.4q2.8 2 5.6 0" stroke="${ink}" stroke-width="1" fill="none" stroke-linecap="round"/>`);
+  if (r === 12) P.push(`<path d="M27.4 38.2q2.6 1.9 5.2 0q-2.6-.6-5.2 0z" fill="#c4415a"/><g fill="${gold}"><circle cx="20.6" cy="36.2" r="1"/><circle cx="39.4" cy="36.2" r="1"/></g><path d="M24 47.5q6 4 12 0" stroke="${gold}" stroke-width="1" fill="none"/>`);
+  if (r === 13) P.push(`<path d="M25.5 37.6q2.2-1.6 4.5-.3 2.3-1.3 4.5.3-2.2 1.2-4.5.4-2.3.8-4.5-.4z" fill="${hair}" stroke="${ink}" stroke-opacity=".25" stroke-width=".4"/>`);
+  // headwear
+  if (r === 11) P.push(`<path d="M18.5 24.6c0-6.5 5.5-10 12.5-9.5 6 .4 10.5 3.6 10 7.6-5.5-1.9-13.6-1.3-22.5 1.9z" fill="${sec}"/><path d="M19 24.4c7.5-2.8 15.5-3.3 22.5-1.5" stroke="${gold}" stroke-width="1.4" fill="none"/><path d="M38 17c4-6 10-8 14-12-.4 7-4.6 12.6-11 14.5z" fill="${gold}"/><path d="M39 18.5c3.5-3 7-6.5 11.6-12" stroke="${ink}" stroke-opacity=".3" stroke-width=".6" fill="none"/>`);
+  if (r === 12) P.push(`<path d="M21.5 21.6l1.8-6.5 3.6 3.6 3.1-6.1 3.1 6.1 3.6-3.6 1.8 6.5c-5.6-1.3-11.4-1.3-17 0z" fill="${gold}"/><circle cx="30" cy="18.2" r="1.4" fill="${sec}"/>`);
+  if (r === 13) P.push(`<path d="M19.5 22.5l1-9.5 4.8 4.5L30 9.5l4.7 8 4.8-4.5 1 9.5z" fill="${gold}"/><rect x="19.5" y="20.2" width="21" height="3.2" rx=".8" fill="${gold}"/><g fill="${gold}"><circle cx="20.5" cy="13" r="1.1"/><circle cx="30" cy="9.5" r="1.1"/><circle cx="39.5" cy="13" r="1.1"/></g><circle cx="25" cy="21.8" r="1" fill="${sec}"/><circle cx="30" cy="21.8" r="1.1" fill="#e04a5a"/><circle cx="35" cy="21.8" r="1" fill="${sec}"/>`);
+  // props
+  if (r === 11) P.push(`<path d="M9 72V38" stroke="${steel}" stroke-width="1.6" stroke-linecap="round"/><path d="M9 33l-3.4 6h6.8z" fill="${steel}"/><path d="M5.5 41.5h7" stroke="${gold}" stroke-width="1.4" stroke-linecap="round"/>`);
+  if (r === 12) P.push(`<path d="M50 72c0-8-1-14-3-19" stroke="#4f9a52" stroke-width="1.3" fill="none"/><path d="M48.5 60c2-1.5 4-1.8 6-1.2-1.5 1.8-3.6 2.4-6 1.2z" fill="#4f9a52"/><g fill="${sec}"><circle cx="47" cy="48.6" r="2"/><circle cx="50" cy="51" r="2"/><circle cx="44" cy="51" r="2"/><circle cx="45.2" cy="54.4" r="2"/><circle cx="48.8" cy="54.4" r="2"/></g><circle cx="47" cy="52" r="1.4" fill="${gold}"/>`);
+  if (r === 13) P.push(`<path d="M51 28v27" stroke="${steel}" stroke-width="2.3" stroke-linecap="round"/><path d="M46.6 55.5h8.8" stroke="${gold}" stroke-width="2.1" stroke-linecap="round"/><path d="M51 56v6" stroke="${sec}" stroke-width="2.2" stroke-linecap="round"/><circle cx="51" cy="63" r="1.4" fill="${gold}"/>`);
+  // suit badge
+  P.push(`<use href="#s${s}" x="3" y="3" width="9" height="9" fill="currentColor"/>`);
+  return `<svg class="art" viewBox="0 0 60 72" aria-hidden="true">${P.join('')}</svg>`;
+}
+
 function cardBody(id) {
   const r = rank(id), s = suit(id);
   let body;
@@ -387,8 +718,9 @@ function cardBody(id) {
       `<svg class="p${u > .5 ? ' f' : ''}" style="left:${PX[c] * 100}%;top:${PY(u) * 100}%;width:calc(var(--cw)*${PIP_SIZE[r]})" viewBox="0 0 24 24" aria-hidden="true"><use href="#s${s}"/></svg>`
     ).join('');
   } else {
-    body = `<div class="face"><svg class="art" viewBox="0 0 48 56" aria-hidden="true"><use href="#f${r - 1}"/></svg><svg class="fs" viewBox="0 0 24 24" aria-hidden="true"><use href="#s${s}"/></svg></div>`;
+    body = `<div class="face">${courtSVG(r, s)}</div>`;
   }
+  if (r === 1) body = '<span class="ace-ring"></span>' + body;
   return `<span class="idx"><b>${RANKS[r - 1]}</b><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#s${s}"/></svg></span>` + body;
 }
 
@@ -414,6 +746,20 @@ function pulseSlot(s, ms) {
     if (G.found[s].length === 13) el.classList.add('complete');
   }, Math.max(0, ms - 80));
 }
+// Cards are slightly see-through, so a card covered by others only draws its visible strip.
+// That way the background shows through, never the cards underneath.
+const clipT = [];
+function setClip(id, covered, hidePx) {
+  const el = cardEls[id];
+  if (dealing) return;                     // the deal schedules its own clips as cards land
+  clearTimeout(clipT[id]);
+  if (!covered) { el.style.clipPath = ''; return; }
+  const v = `inset(-8px -8px ${hidePx.toFixed(1)}px -8px)`;
+  if (el.style.clipPath === v) return;
+  if (reduceMotion) { el.style.clipPath = v; return; }
+  clipT[id] = setTimeout(() => { el.style.clipPath = v; }, 700);   // wait until the card on top has landed
+}
+function clearClips() { cardEls.forEach((el, id) => { clearTimeout(clipT[id]); el.style.clipPath = ''; }); }
 function layout(extraBoost) {
   if (casc) return;
   const W = board.clientWidth, H = board.clientHeight;
@@ -434,7 +780,7 @@ function layout(extraBoost) {
   const colX = i => x0 + i * (cw + g);
   let off = ch * 0.32;
   if (maxLen > 1) off = Math.max(ch * 0.1, Math.min(off, (H - pad - colY - ch) / (maxLen - 1)));
-  geo = { cw, ch };
+  geo = { cw, ch, off };
   board.style.setProperty('--cw', cw + 'px');
   board.style.setProperty('--ch', ch + 'px');
 
@@ -462,11 +808,12 @@ function layout(extraBoost) {
     el.style.zIndex = z + (moved ? 400 : 0);
     return total;
   };
-  G.cols.forEach((c, i) => { let mi = 0; c.forEach((id, k) => { if (place(id, colX(i), colY + k * off, 10 + k, mi)) mi++; }); });
-  G.cells.forEach((id, i) => { if (id != null) place(id, colX(i), pad, 10, 0); });
+  G.cols.forEach((c, i) => { let mi = 0; c.forEach((id, k) => { if (place(id, colX(i), colY + k * off, 10 + k, mi)) mi++; setClip(id, k < c.length - 1, ch - off); }); });
+  G.cells.forEach((id, i) => { if (id != null) { place(id, colX(i), pad, 10, 0); setClip(id, false, 0); } });
   G.found.forEach((p, s) => {
     p.forEach((id, k) => {
       const t = place(id, colX(4 + s), pad, 10 + k, 0);
+      setClip(id, k < p.length - 1, ch + 10);
       if (t > 1 && k === p.length - 1) pulseSlot(s, t);
     });
     if (p.length < 13) slotEls.found[s].classList.remove('complete');
@@ -584,6 +931,7 @@ function clearMarks() {
 }
 function clearSel() { sel = null; clearMarks(); }
 function shake(ids) {
+  sfx('error');
   ids.forEach(id => {
     const el = cardEls[id];
     el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
@@ -598,9 +946,12 @@ function toast(msg, ms = 2600) {
 
 function bestHint() {
   let best = null;
+  const seenH = new Set(G.hist.map(e => e.h)), base = stateFromG();
   for (const s of allSources()) {
     const cards = srcCards(s);
     for (const d of validDests(s)) {
+      const sm = { ft: s.t, fi: s.i, n: cards.length, tt: d.t, ti: d.i, card: cards[0] };
+      if (seenH.has(sHash(sAuto(sApply(base, sm))))) continue;
       let score;
       if (d.t === 'found') score = 100;
       else if (d.t === 'col') {
@@ -620,14 +971,48 @@ function bestHint() {
   }
   return best;
 }
-function showHint() {
-  if (busy || G.won) return;
-  const m = bestHint();
-  if (!m) { toast('No moves left. Undo to try another path.', 3500); return; }
+const toGameMove = m => ({ s: m.ft === 'col' ? { t: 'col', i: m.fi, k: G.cols[m.fi].length - m.n } : { t: 'cell', i: m.fi }, d: { t: m.tt, i: m.ti } });
+function highlightHint(s, d, text) {
   clearMarks();
-  srcCards(m.s).forEach(id => cardEls[id].classList.add('hint'));
-  destEl(m.d).classList.add('hint', 'hintdest', 'target');
+  srcCards(s).forEach(id => cardEls[id].classList.add('hint'));
+  destEl(d).classList.add('hint', 'hintdest', 'target');
+  if (text) toast('Hint: ' + text, 2600);
   hintT = setTimeout(clearHint, 2800);
+}
+async function showHint() {
+  if (busy || reviewing || G.won || hintBusy) return;
+  const cur = gHash();
+  let mv = null;
+  // keep following the same winning line while the player follows it
+  if (G.plan) {
+    const j = G.plan.findIndex(p => p.h === cur);
+    if (j >= 0) { G.plan = G.plan.slice(j); mv = G.plan[0].m; } else G.plan = null;
+  }
+  if (!mv) {
+    hintBusy = true; hintBtn.classList.add('thinking');
+    const token = G;
+    // never route back through a position already played this game, so hints can't loop
+    const exclude = G.hist.map(e => e.h).filter(h => h !== cur);
+    const r = await solveAsync(stateFromG(), { maxNodes: 60000, exclude });
+    hintBusy = false; hintBtn.classList.remove('thinking');
+    if (token !== G || reviewing || gHash() !== cur) return;
+    if (r.sol && r.sol.moves.length) {
+      const hs = [cur].concat(r.sol.states.slice(0, -1).map(sHash));
+      G.plan = r.sol.moves.map((m, i) => ({ m, h: hs[i] }));
+      mv = G.plan[0].m;
+    } else if (r.exhausted) {
+      toast('There’s no way to win from here. Try Undo.', 3800); return;
+    }
+  }
+  if (mv) {
+    const { s, d } = toGameMove(mv);
+    if (canMove(s, d)) { highlightHint(s, d, describeMove(stateFromG(), mv)); return; }
+    G.plan = null;
+  }
+  // fallback if the search runs out of time: a move that makes progress and never repeats a position
+  const m = bestHint();
+  if (!m) { toast('No useful moves left. Try Undo.', 3500); return; }
+  highlightHint(m.s, m.d, '');
 }
 
 /* ---------- HUD ---------- */
@@ -638,9 +1023,9 @@ function updateHud() {
     if (lastMovesShown !== null && !reduceMotion) { hudMoves.classList.remove('tick'); void hudMoves.offsetWidth; hudMoves.classList.add('tick'); }
     lastMovesShown = G.moves;
   }
-  hudDeal.textContent = '#' + G.seed;
-  undoBtn.disabled = busy || autoRuns > 0 || G.won || !G.hist.length;
-  hintBtn.disabled = busy || G.won;
+  hudDeal.textContent = G.daily ? 'Daily #' + G.daily.n : '#' + G.seed;
+  undoBtn.disabled = busy || reviewing || autoRuns > 0 || G.won || !G.hist.length;
+  hintBtn.disabled = busy || reviewing || G.won;
 }
 setInterval(() => {
   const s = G.started && !G.won ? Math.floor((Date.now() - G.t0) / 1000) : G.elapsed;
@@ -658,9 +1043,12 @@ function abandon() {
 async function userMove(s, d) {
   if (busy || G.won) return;
   clearMarks(); sel = null;
-  G.hist.push({ s: snap(), moves: G.moves });
+  const mvCards = srcCards(s);
+  G.hist.push({ s: snap(), moves: G.moves, h: gHash(), fl: G.full.length, mv: { ft: s.t, fi: s.i, n: mvCards.length, tt: d.t, ti: d.i, card: mvCards[0] } });
   if (!G.started) startGame();
   const cards = applyMove(s, d);
+  G.full.push([s.t === 'col' ? 0 : 1, s.i, cards.length, d.t === 'col' ? 0 : d.t === 'cell' ? 1 : 2, d.i, 0]);
+  if (d.t !== 'found') sfx('place');
   G.moves++; G.last = { card: cards[0], from: s };
   updateHud();
   layout();
@@ -688,7 +1076,9 @@ function findAnyFoundation() {
 }
 const foundTotal = () => G.found.reduce((n, p) => n + p.length, 0);
 async function sendToFoundation(id, pause = 170) {
-  applyMove(srcOf(loc(id)), { t: 'found', i: suit(id) });
+  const l = loc(id);
+  G.full.push([l.t === 'col' ? 0 : 1, l.i, 1, 2, suit(id), 1]);
+  applyMove(srcOf(l), { t: 'found', i: suit(id) });
   layout();
   await sleep(reduceMotion ? 0 : pause);
 }
@@ -703,8 +1093,8 @@ async function afterMove() {
     }
     if (token === G && !G.won && foundTotal() < 52 && G.cols.every((c, i) => isSeq(i, 0))) {
       await sleep(reduceMotion ? 0 : 160);
-      motionScale = .5;
-      while (token === G && !G.won && (id = findAnyFoundation()) != null) await sendToFoundation(id, 55);
+      motionScale = .28;
+      while (token === G && !G.won && (id = findAnyFoundation()) != null) await sendToFoundation(id, 22);
     }
   } finally {
     motionScale = 1;
@@ -716,8 +1106,9 @@ async function afterMove() {
   else if (autoRuns === 0 && noMoves()) toast('No moves left. Undo a few moves or start a new deal.', 6000);
 }
 function undo() {
-  if (busy || autoRuns > 0 || G.won || !G.hist.length) return;
+  if (busy || reviewing || autoRuns > 0 || G.won || !G.hist.length) return;
   const h = G.hist.pop(), st = JSON.parse(h.s);
+  if (h.fl != null) G.full.length = h.fl;
   G.cols = st.cols; G.cells = st.cells; G.found = st.found; G.moves = h.moves; G.last = null;
   clearSel(); updateHud(); layout();
 }
@@ -725,8 +1116,10 @@ function autoMove(s) {
   clearSel();
   const cards = srcCards(s);
   const ds = validDests(s);
+  const isKing = rank(cards[0]) === 13;
   let pick =
     ds.find(d => d.t === 'found') ||
+    (isKing && ds.find(d => d.t === 'col' && !G.cols[d.i].length)) ||
     ds.find(d => d.t === 'col' && G.cols[d.i].length) ||
     ds.find(d => d.t === 'cell') ||
     ds.find(d => d.t === 'col');
@@ -747,11 +1140,26 @@ function win() {
   const notes = [];
   if (stats.bestMoves == null || G.moves < stats.bestMoves) { stats.bestMoves = G.moves; notes.push('fewest moves'); }
   if (stats.bestTime == null || G.elapsed < stats.bestTime) { stats.bestTime = G.elapsed; notes.push('fastest time'); }
+  G.score = scoreOf(G.moves, G.elapsed);
+  if (stats.bestScore == null || G.score > stats.bestScore) { stats.bestScore = G.score; notes.unshift('best score'); }
   store.set('fc:stats', stats);
   $('#winText').textContent =
-    `Deal #${G.seed} solved in ${G.moves} moves and ${fmt(G.elapsed)}.` +
+    `Score ${fmtScore(G.score)}: deal #${G.seed} solved in ${G.moves} moves and ${fmt(G.elapsed)}.` +
     (notes.length ? ` That's your ${notes.join(' and ')}.` : '') +
     (stats.streak > 1 ? ` ${stats.streak} wins in a row.` : '');
+  const ch = G.challenge;
+  if (ch && ch.seed === G.seed && !ch.score && ch.beat) $('#winText').textContent += G.moves < ch.beat ? ` You beat ${ch.by}'s ${ch.beat} moves!` : G.moves === ch.beat ? ` You tied ${ch.by}'s ${ch.beat} moves.` : ` ${ch.by}'s ${ch.beat} moves still stands.`;
+  if (ch && ch.seed === G.seed && ch.score) $('#winText').textContent += G.score > ch.score ? ` You beat ${ch.by}'s ${fmtScore(ch.score)}!` : G.score === ch.score ? ` You tied ${ch.by}'s ${fmtScore(ch.score)}.` : ` ${ch.by}'s ${fmtScore(ch.score)} still stands.`;
+  if (G.daily) {
+    const d = recordDaily(), streak = currentStreak();
+    $('#winText').textContent = `Daily #${G.daily.n} solved! ` + $('#winText').textContent.replace(`: deal #${G.seed} solved in`, ' in') +
+      (d.first && streak ? ` Daily streak: ${streak} day${streak === 1 ? '' : 's'}.` : '') +
+      (!d.first && d.prev && d.improved ? ' A new best for today.' : '');
+  }
+  $('#btnWinDaily').hidden = !!(G.daily && G.daily.date === todayStr()) || !!daily.results[todayStr()];
+  sfx('win');
+  $('#shareBox').hidden = true;
+  submitScore().then(res => { if (res && res.rank) $('#winText').textContent += ` You're #${res.rank} of ${res.total} on this deal.`; });
   updateHud();
   finale();
   winT = setTimeout(() => openDlg('winDlg'), reduceMotion ? 300 : 950);
@@ -759,6 +1167,7 @@ function win() {
 function finale() {
   if (reduceMotion) return;
   casc = true;
+  clearClips();
   const W = board.clientWidth, H = board.clientHeight, { cw, ch } = geo;
   const A = 108, half = A / 2 * Math.PI / 180;
   const Rw = (W / 2 - cw * 0.31 - ch * 0.39 - 6) / Math.sin(half);
@@ -784,19 +1193,21 @@ function cancelFinale() {
 }
 
 /* ---------- dealing ---------- */
-function newDeal(seed) {
+function newDeal(seed, dailyInfo) {
+  if (reviewing) { stopPlay(); RV = null; reviewing = false; document.body.classList.remove('reviewing'); $('#mainBar').hidden = false; $('#reviewBar').hidden = true; $('#rcard').hidden = true; }
   abandon();
   cancelFinale(); closeDlgs(); clearSel(); clearTimeout(dealT);
   G = newState(seed);
+  G.daily = dailyInfo || null;
   pos.length = 0; autoRuns = 0; lastMovesShown = null;
   slotEls.found.forEach(el => el.classList.remove('complete', 'pulse'));
   updateHud();
   playDeal();
 }
 function playDeal() {
-  busy = true; dealing = true; updateHud();
+  busy = true; dealing = true; updateHud(); clearClips();
   layout();
-  if (reduceMotion) { cardEls.forEach(el => { el.style.opacity = 1; el.style.transition = ''; }); dealing = false; busy = false; updateHud(); return; }
+  if (reduceMotion) { cardEls.forEach(el => { el.style.opacity = 1; el.style.transition = ''; }); dealing = false; busy = false; updateHud(); layout(); return; }
   const W = board.clientWidth;
   const start = `translate(${(W - geo.cw) / 2}px,${-geo.ch * 1.2}px)`;
   cardEls.forEach(el => {
@@ -813,10 +1224,14 @@ function playDeal() {
     el.style.opacity = 1;
     el.style.transform = `translate(${p.x}px,${p.y}px)`;
     el.style.rotate = '0deg'; el.style.scale = '1';
+    if (k < c.length - 1) {
+      const lands = ((k + 1) * 8 + i) * STEP + 950, v = `inset(-8px -8px ${(geo.ch - geo.off).toFixed(1)}px -8px)`;
+      clipT[id] = setTimeout(() => { el.style.clipPath = v; }, lands);
+    }
   }));
   dealT = setTimeout(() => {
     cardEls.forEach(el => { el.style.transition = ''; el.style.rotate = ''; el.style.scale = ''; });
-    dealing = false; busy = false; updateHud();
+    dealing = false; busy = false; updateHud(); layout();
   }, 51 * STEP + 1150);
 }
 
@@ -852,11 +1267,12 @@ function beginDrag() {
   const s = srcOf(cur.l);
   cur.src = s; cur.cards = srcCards(s); cur.els = cur.cards.map(id => cardEls[id]); cur.drag = true;
   cur.els.forEach((el, k) => { cancelAnims(el); el.classList.add('drag'); el.style.zIndex = 1000 + k; });
+  if (s.t === 'col' && s.k > 0) setClip(G.cols[s.i][s.k - 1], false, 0);   // show the card being uncovered
   markTargets(s);
 }
 
 board.addEventListener('pointerdown', e => {
-  if (busy || G.won || e.button > 0) return;
+  if (busy || reviewing || G.won || e.button > 0) return;
   clearHint();
   const r = board.getBoundingClientRect();
   const px = e.clientX - r.left, py = e.clientY - r.top;
@@ -911,29 +1327,199 @@ function onTap(c) {
   autoMove(srcOf(c.l));
 }
 
+/* ---------- game review ---------- */
+const RV_INFO = {
+  best:       { name: 'Best',         color: '#2f9e6b', score: 100,  text: 'The same move the solver chose.' },
+  excellent:  { name: 'Excellent',    color: '#1f9aa0', score: 100,  text: 'As good as the solver’s line.' },
+  good:       { name: 'Good',         color: '#7c8799', score: 85,   text: 'A fine move. The win just got a little longer.' },
+  inaccuracy: { name: 'Inaccuracy',   color: '#d99a1e', score: 60,   text: 'This made the win noticeably longer.' },
+  mistake:    { name: 'Mistake',      color: '#e0702a', score: 30,   text: 'This made the win much harder.' },
+  blunder:    { name: 'Blunder',      color: '#d93047', score: 0,    text: 'After this move, I couldn’t find any way to win.' },
+  lost:       { name: 'No win found', color: '#7c8799', score: null, text: 'No winning line was found before this move, so it isn’t rated.' }
+};
+const RV_ORDER = ['best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
+const rvCache = new Map();
+async function rvSolve(st, gw = 0.35) {
+  const h = sHash(st) + '@' + gw;
+  if (rvCache.has(h)) return rvCache.get(h);
+  const r = await solveAsync(st, { maxNodes: 30000, gw });
+  const sol = r.sol || null;
+  rvCache.set(h, sol);
+  return sol;
+}
+function lowDepth(st) {
+  let d = 0;
+  for (let su = 0; su < 4; su++) {
+    if (st.found[su] >= 13) continue;
+    const id = su * 13 + st.found[su];
+    for (const c of st.cols) { const p = c.indexOf(id); if (p >= 0) { d += c.length - 1 - p; break; } }
+  }
+  return d;
+}
+function reasonFor(raw, um, label) {
+  const r = [], best = label.best;
+  if (label.cls === 'blunder') r.push(RV_INFO.blunder.text);
+  if (best && best.tt === 'found' && um.tt !== 'found') r.push('A card could have gone up to its foundation.');
+  if (um.tt === 'cell' && (!best || best.tt !== 'cell')) r.push('It used up a free cell, and free cells are scarce.');
+  if (um.tt === 'col' && !raw.cols[um.ti].length && um.n === 1 && um.card % 13 !== 12) r.push('It filled an empty column with a single card. Empty columns are what let you move long runs.');
+  if (um.tt === 'col' && lowDepth(sAuto(sApply(raw, um))) > lowDepth(raw)) r.push('It covered a low card you’ll need soon.');
+  return r.slice(0, 2).join(' ');
+}
+async function analyze() {
+  const token = RV, n = RV.moves.length;
+  const Q = i => sAuto(stateFromSnap(RV.positions[i]));
+  let cur = await rvSolve(Q(0));
+  for (let k = 0; k < n; k++) {
+    if (RV !== token) return;
+    const raw = stateFromSnap(RV.positions[k]), qk = Q(k), qk1 = Q(k + 1), hk1 = sHash(qk1), um = RV.moves[k];
+    let label, next;
+    if (!cur) { label = { cls: 'lost' }; next = await rvSolve(qk1); }
+    else if (!cur.moves.length) { label = { cls: 'best' }; next = cur; }
+    else {
+      const best = cur.moves[0];
+      if (sHash(cur.states[0]) === hk1) { label = { cls: 'best', best }; next = { moves: cur.moves.slice(1), states: cur.states.slice(1) }; }
+      else {
+        next = await rvSolve(qk1);
+        // double-check with a second, more thorough search before marking a move down
+        if (!next || next.moves.length + 1 > cur.moves.length) {
+          const alt = await rvSolve(qk1, 0.9);
+          if (alt && (!next || alt.moves.length < next.moves.length)) next = alt;
+        }
+        if (!next) label = { cls: 'blunder', best };
+        else {
+          const loss = next.moves.length + 1 - cur.moves.length;
+          label = { cls: loss <= 0 ? 'excellent' : loss <= 4 ? 'good' : loss <= 12 ? 'inaccuracy' : 'mistake', best, loss };
+        }
+      }
+    }
+    if (RV !== token) return;
+    label.you = describeMove(raw, um);
+    if (label.best) label.bestText = describeMove(qk, label.best);
+    if (label.cls !== 'best' && label.cls !== 'lost') label.reason = reasonFor(raw, um, label);
+    RV.labels[k] = label; RV.done = k + 1;
+    if (RV.idx === 0 || RV.idx === k + 1) { renderRcard(); if (RV.idx === k + 1) markReviewMove(); }
+    cur = next;
+  }
+  if (RV === token) renderRcard();
+}
+function enterReview() {
+  if (busy || autoRuns > 0) return;
+  if (!G.hist.length) { toast('Make a few moves first, then review them.', 2400); return; }
+  cancelFinale(); closeDlgs(); clearMarks();
+  RV = { positions: G.hist.map(e => e.s).concat([snap()]), moves: G.hist.map(e => e.mv), idx: 0, live: snap(), labels: [], done: 0, wasWon: G.won, playT: null };
+  reviewing = true;
+  $('#toast').classList.remove('show'); document.body.classList.add('reviewing');
+  $('#mainBar').hidden = true; $('#reviewBar').hidden = false; $('#rcard').hidden = false;
+  updateHud();
+  showPos(0);
+  analyze();
+}
+function showPos(i) {
+  RV.idx = Math.max(0, Math.min(RV.moves.length, i));
+  const o = JSON.parse(RV.positions[RV.idx]);
+  G.cols = o.cols; G.cells = o.cells; G.found = o.found;
+  clearMarks(); layout(); markReviewMove(); renderRcard();
+  $('#rvPrev').disabled = $('#rvFirst').disabled = RV.idx === 0;
+  $('#rvNext').disabled = $('#rvLast').disabled = RV.idx === RV.moves.length;
+}
+function markReviewMove() {
+  board.querySelectorAll('.rv').forEach(el => el.classList.remove('rv'));
+  if (!RV || RV.idx === 0) return;
+  const um = RV.moves[RV.idx - 1], label = RV.labels[RV.idx - 1];
+  const color = label ? RV_INFO[label.cls].color : 'var(--accent)';
+  const l = loc(um.card);
+  const ids = l.t === 'col' ? G.cols[l.i].slice(l.k, l.k + um.n) : [um.card];
+  ids.forEach(id => { cardEls[id].classList.add('rv'); cardEls[id].style.setProperty('--rvc', color); });
+}
+function renderRcard() {
+  if (!RV) return;
+  const el = $('#rcard'), n = RV.moves.length;
+  if (RV.idx === 0) {
+    const counts = {}; let sum = 0, cnt = 0;
+    RV.labels.forEach(l => { counts[l.cls] = (counts[l.cls] || 0) + 1; const sc = RV_INFO[l.cls].score; if (sc != null) { sum += sc; cnt++; } });
+    const tally = RV_ORDER.filter(c => counts[c]).map(c => `<span style="--bc:${RV_INFO[c].color}"><i></i>${counts[c]} ${RV_INFO[c].name}</span>`).join('');
+    const doneAll = RV.done >= n;
+    el.innerHTML = `<div class="rhead"><h3>Game review</h3><span class="rnum">${n} move${n === 1 ? '' : 's'}</span></div>` +
+      (cnt ? `<div class="acc">${Math.round(sum / cnt)}% accuracy</div>` : '') +
+      (tally ? `<div class="tally">${tally}</div>` : '') +
+      (doneAll ? `<p>Step through with the arrows to see each move and what would have been better.</p>`
+               : `<p>Analyzing move ${RV.done + 1} of ${n}…</p><div class="prog"><b style="width:${Math.round(RV.done / n * 100)}%"></b></div>`);
+    return;
+  }
+  const k = RV.idx - 1, label = RV.labels[k];
+  const youText = label ? label.you : describeMove(stateFromSnap(RV.positions[k]), RV.moves[k]);
+  if (!label) {
+    el.innerHTML = `<div class="rhead"><span class="badge" style="--bc:#7c8799">Analyzing…</span><span class="rnum">Move ${RV.idx} of ${n}</span></div><p>You moved <b>${youText}</b>.</p>`;
+    return;
+  }
+  const info = RV_INFO[label.cls];
+  let body = `<p>You moved <b>${youText}</b>.</p>`;
+  if (label.cls === 'best' || label.cls === 'lost') body += `<p>${info.text}</p>`;
+  else {
+    if (label.bestText) body += `<p>Better: <b>${label.bestText}</b>.</p>`;
+    const extra = label.reason || info.text;
+    if (extra) body += `<p>${extra}</p>`;
+  }
+  el.innerHTML = `<div class="rhead"><span class="badge" style="--bc:${info.color}">${info.name}</span><span class="rnum">Move ${RV.idx} of ${n}</span></div>` + body;
+}
+function stopPlay() {
+  if (!RV) return;
+  clearInterval(RV.playT); RV.playT = null;
+  $('#rvPlay').innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7V5z"/></svg>';
+  $('#rvPlay').title = 'Play';
+}
+function togglePlay() {
+  if (!RV) return;
+  if (RV.playT) { stopPlay(); return; }
+  if (RV.idx >= RV.moves.length) showPos(0);
+  $('#rvPlay').innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>';
+  $('#rvPlay').title = 'Pause';
+  RV.playT = setInterval(() => { if (RV.idx >= RV.moves.length) stopPlay(); else showPos(RV.idx + 1); }, 1100);
+}
+function exitReview() {
+  if (!RV) return;
+  stopPlay();
+  const o = JSON.parse(RV.live), won = RV.wasWon;
+  G.cols = o.cols; G.cells = o.cells; G.found = o.found;
+  RV = null; reviewing = false; document.body.classList.remove('reviewing');
+  board.querySelectorAll('.rv').forEach(el => el.classList.remove('rv'));
+  $('#mainBar').hidden = false; $('#reviewBar').hidden = true; $('#rcard').hidden = true;
+  clearMarks(); layout(); updateHud();
+  if (won) openDlg('winDlg');
+}
+$('#rvFirst').addEventListener('click', () => { stopPlay(); showPos(0); });
+$('#rvPrev').addEventListener('click', () => { stopPlay(); showPos(RV.idx - 1); });
+$('#rvNext').addEventListener('click', () => { stopPlay(); showPos(RV.idx + 1); });
+$('#rvLast').addEventListener('click', () => { stopPlay(); showPos(RV.moves.length); });
+$('#rvPlay').addEventListener('click', togglePlay);
+$('#rvDone').addEventListener('click', exitReview);
+$('#btnReview').addEventListener('click', () => { closeDlgs(); enterReview(); });
+$('#btnWinReview').addEventListener('click', () => { closeDlgs(); enterReview(); });
+
 /* ---------- dialogs & controls ---------- */
-const scrim = $('#scrim'), menuDlg = $('#menuDlg'), winDlg = $('#winDlg');
+const scrim = $('#scrim'), menuDlg = $('#menuDlg'), winDlg = $('#winDlg'), lbDlg = $('#lbDlg'), recDlg = $('#recDlg'), infoDlg = $('#infoDlg');
 let lastFocus = null;
 function renderStats() {
   const rate = stats.played ? Math.round(stats.won / stats.played * 100) + '%' : '–';
   const rows = [
-    ['Played', stats.played], ['Won', stats.won], ['Win rate', rate], ['Win streak', stats.streak],
+    ['Played', stats.played], ['Win rate', rate], ['Win streak', stats.streak], ['Best score', stats.bestScore == null ? '–' : fmtScore(stats.bestScore)],
     ['Fewest moves', stats.bestMoves == null ? '–' : stats.bestMoves], ['Best time', stats.bestTime != null ? fmt(stats.bestTime) : '–']
   ];
   $('#statsList').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
 }
 function openDlg(id) {
   lastFocus = document.activeElement;
-  if (id === 'menuDlg') { renderStats(); $('#optAuto').checked = settings.auto; }
-  scrim.hidden = false; menuDlg.hidden = id !== 'menuDlg'; winDlg.hidden = id !== 'winDlg';
-  const first = (id === 'menuDlg' ? $('#btnNew') : $('#btnWinNew'));
+  $('#toast').classList.remove('show');
+  if (id === 'menuDlg') { renderDailyStatus(); renderStats(); $('#optAuto').checked = settings.auto; $('#optSound').checked = settings.sound; $('#nameInput').value = settings.name || ''; }
+  scrim.hidden = false; menuDlg.hidden = id !== 'menuDlg'; winDlg.hidden = id !== 'winDlg'; lbDlg.hidden = id !== 'lbDlg'; recDlg.hidden = id !== 'recDlg'; infoDlg.hidden = id !== 'infoDlg';
+  const first = id === 'menuDlg' ? $('#btnNew') : id === 'lbDlg' ? $('#lbClose') : id === 'recDlg' ? $('#btnRec') : id === 'infoDlg' ? $('#infoClose') : $('#btnWinNew');
   setTimeout(() => first.focus(), 0);
 }
 function closeDlgs() {
-  scrim.hidden = true; menuDlg.hidden = true; winDlg.hidden = true;
+  scrim.hidden = true; menuDlg.hidden = true; winDlg.hidden = true; lbDlg.hidden = true; recDlg.hidden = true; infoDlg.hidden = true;
   if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
-scrim.addEventListener('click', e => { if (e.target === scrim && !menuDlg.hidden) closeDlgs(); });
+scrim.addEventListener('click', e => { if (e.target !== scrim) return; if (!menuDlg.hidden) closeDlgs(); else if (!recDlg.hidden) closeRecorder(); else if (!lbDlg.hidden || !infoDlg.hidden) { closeDlgs(); if (G.won) openDlg('winDlg'); } });
 $('#menu').addEventListener('click', () => openDlg('menuDlg'));
 $('#btnClose').addEventListener('click', closeDlgs);
 $('#btnNew').addEventListener('click', () => newDeal(randomSeed()));
@@ -951,161 +1537,106 @@ $('#optAuto').addEventListener('change', e => { settings.auto = e.target.checked
 undoBtn.addEventListener('click', undo);
 hintBtn.addEventListener('click', showHint);
 
-/* ---------- living background ---------- */
+/* ---------- living background: organic gradients + curated palettes ----------
+   Soft gradient shapes drawn on a small canvas, scaled up and blurred, so they stay smooth and cheap.
+   Every Scene press picks a new palette and a new composition (layout, shapes, motion). */
 const bgCanvas = $('#bg'), bgCtx = bgCanvas.getContext('2d');
 const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
 const isDark = () => settings.theme === 'dark' || (settings.theme === 'auto' && darkMQ.matches);
-function applyTheme() {
-  if (settings.theme === 'auto') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', settings.theme);
-  document.querySelectorAll('[data-theme-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeOpt === settings.theme)));
-  if (reduceMotion && scene) renderBg(performance.now());
-}
 let bgW = 0, bgH = 0, scene = null, prevScene = null, bgRaf = 0, bgLast = 0;
-const PATTERNS = ['contours', 'spiral', 'mandala', 'flow', 'moire', 'tunnel'];
-const PATTERN_NAMES = { contours: 'Ripple field', spiral: 'Spiral', mandala: 'Mandala', flow: 'Flow lines', moire: 'Moiré', tunnel: 'Tunnel' };
-const SCHEMES = { analogous: [0, 26, -26, 52], triad: [0, 120, 240, 60], split: [0, 150, 210, 30], duo: [0, 180, 16, 196], mono: [0, 12, -12, 24] };
 const TAU = Math.PI * 2;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const pickOne = a => a[Math.floor(Math.random() * a.length)];
 const sign = () => (Math.random() < .5 ? -1 : 1);
-
+const BG_SCALE = 3;
+/* Curated scenes. Each has a light and a dark version: a ground color (g) and three pool colors (a, b, c).
+   Pools differ from the ground in hue more than brightness, so the cards always stand out. No reds or pinks. */
+const SCENES = [
+  { id: 'sage',     light: { g: '#a9bba8', a: '#86a28f', b: '#c6bb92', c: '#9bb3a2' }, dark: { g: '#121c17', a: '#1e3328', b: '#2b2a1d', c: '#182821' } },
+  { id: 'slate',    light: { g: '#a6b2c4', a: '#8496b2', b: '#bdb5a3', c: '#9cadbf' }, dark: { g: '#101725', a: '#1c2c48', b: '#28233d', c: '#15243a' } },
+  { id: 'sand',     light: { g: '#cbbd9e', a: '#b6a37a', b: '#a7ae94', c: '#d3c2a0' }, dark: { g: '#1b1711', a: '#32281a', b: '#24281c', c: '#2a2317' } },
+  { id: 'dusk',     light: { g: '#aba7c3', a: '#8d88b1', b: '#b3bfcc', c: '#9f9abc' }, dark: { g: '#15111d', a: '#291f3f', b: '#1a2537', c: '#221b32' } },
+  { id: 'ocean',    light: { g: '#9fbcc4', a: '#7ba3b1', b: '#a9c2b4', c: '#8fb2bf' }, dark: { g: '#0d1a1f', a: '#16323b', b: '#1a2e2a', c: '#132830' } },
+  { id: 'moss',     light: { g: '#b3b894', a: '#959d6f', b: '#c2b58a', c: '#a3ab84' }, dark: { g: '#151710', a: '#262c18', b: '#2e2a19', c: '#1e2414' } },
+  { id: 'graphite', light: { g: '#b4b6bb', a: '#979ba4', b: '#c3bdb2', c: '#a6abb4' }, dark: { g: '#121316', a: '#22252c', b: '#2a2723', c: '#1b1d22' } },
+  { id: 'clay',     light: { g: '#c7ad9a', a: '#b0907b', b: '#c9b99a', c: '#bba08d' }, dark: { g: '#1c1411', a: '#33231c', b: '#2c261b', c: '#261b16' } }
+];
+// Where the color pools sit (centers and radii as fractions of the screen). Kept low and at the edges, away from the cards.
+const LAYOUT_TALL = [ // phones and narrow windows
+  { k: 'a', x: .23, y: .83, rx: .56, ry: .24, o: 1 },
+  { k: 'b', x: .90, y: .91, rx: .49, ry: .19, o: 1 },
+  { k: 'c', x: .97, y: .00, rx: .41, ry: .15, o: .9 }
+];
+const LAYOUT_WIDE = [ // computers and tablets held sideways
+  { k: 'a', x: .06, y: .70, rx: .23, ry: .35, o: 1 },
+  { k: 'b', x: .92, y: .83, rx: .23, ry: .33, o: 1 },
+  { k: 'c', x: .06, y: .01, rx: .17, ry: .24, o: .85 },
+  { k: 'a', x: .95, y: .03, rx: .15, ry: .20, o: .7 }
+];
+const rgbCache = {};
+const rgba = (hex, a) => {
+  let c = rgbCache[hex];
+  if (!c) { const n = parseInt(hex.slice(1), 16); c = rgbCache[hex] = [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  return `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+};
+function hexHue(hex) {
+  const n = parseInt(hex.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  if (!d) return 220;
+  let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return Math.round(h * 60 + 360) % 360;
+}
 function makeScene() {
-  let pattern;
-  do { pattern = pickOne(PATTERNS); } while (scene && pattern === scene.pattern);
-  const base = rnd(0, 360), offs = SCHEMES[pickOne(Object.keys(SCHEMES))];
-  const blobs = Array.from({ length: Math.round(rnd(3, 5)) }, () => ({
-    ax: rnd(.16, .4), ay: rnd(.16, .4), fx: rnd(.05, .12), fy: rnd(.05, .12), px: rnd(0, TAU), py: rnd(0, TAU),
-    r: rnd(.36, .68), fr: rnd(.08, .18), pr: rnd(0, TAU),
-    lobes: Math.round(rnd(2, 6)), amp: rnd(.08, .22), sp: rnd(.12, .32) * sign(), ph: rnd(0, TAU),
-    rot: rnd(.02, .06) * sign(), a: rnd(.15, .24)
+  let pick;
+  do { pick = pickOne(SCENES); } while (scene && pick === scene.def);
+  // each pick varies a little: mirrored or not, pools nudged, its own slow drift
+  const mirror = Math.random() < .5;
+  const vary = L => L.map(p => ({
+    k: p.k, o: p.o,
+    x: (mirror ? 1 - p.x : p.x) + rnd(-.04, .04), y: p.y + rnd(-.03, .03),
+    rx: p.rx * rnd(.9, 1.12), ry: p.ry * rnd(.9, 1.12), rot: rnd(-.5, .5),
+    fx: TAU / rnd(70, 120), fy: TAU / rnd(80, 130), px: rnd(0, TAU), py: rnd(0, TAU)
   }));
-  return {
-    pattern, name: PATTERN_NAMES[pattern], blobs,
-    hues: offs.map(o => (base + o + rnd(-8, 8) + 360) % 360),
-    sat: Math.round(rnd(24, 38)),
-    s: rnd(30, 50), speed: rnd(.7, 1.2), phase: rnd(0, 100),
-    k: pickOne([3, 4, 5, 6, 7, 8, 9]), arms: pickOne([5, 7, 9, 12]), sides: pickOne([3, 4, 5, 6, 8]),
-    twist: rnd(.4, 1.6) * sign(), spin: rnd(.04, .1) * sign(), angle: rnd(0, Math.PI),
-    f1: rnd(.005, .011), f2: rnd(.01, .02), born: performance.now()
-  };
+  return { def: pick, tall: vary(LAYOUT_TALL), wide: vary(LAYOUT_WIDE), born: performance.now() };
+}
+function drawScene(sc, time, alpha) {
+  const c = bgCtx, pal = sc.def[isDark() ? 'dark' : 'light'];
+  const pools = bgW / Math.max(bgH, 1) < .9 ? sc.tall : sc.wide;
+  c.globalAlpha = alpha;
+  c.fillStyle = pal.g; c.fillRect(0, 0, bgW, bgH);
+  for (const p of pools) {
+    const x = bgW * (p.x + .03 * Math.sin(time * p.fx + p.px)), y = bgH * (p.y + .02 * Math.cos(time * p.fy + p.py));
+    const rx = bgW * p.rx, ry = bgH * p.ry, col = pal[p.k];
+    c.save(); c.translate(x, y); c.rotate(p.rot); c.scale(1, ry / rx);
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, rgba(col, p.o)); g.addColorStop(.6, rgba(col, p.o * .85)); g.addColorStop(1, rgba(col, 0));
+    c.fillStyle = g; c.beginPath(); c.arc(0, 0, rx, 0, TAU); c.fill();
+    c.restore();
+  }
+  c.globalAlpha = 1;
+}
+function applyPalette() {
+  if (!scene) return;
+  const dark = isDark(), pal = scene.def[dark ? 'dark' : 'light'], h = hexHue(scene.def.light.a);
+  const st = document.documentElement.style;
+  st.setProperty('--base-bot', pal.g);
+  st.setProperty('--accent', dark ? `hsl(${h},55%,72%)` : `hsl(${h},45%,34%)`);
+  st.setProperty('--accent-soft', dark ? `hsla(${h},55%,72%,.24)` : `hsla(${h},45%,34%,.16)`);
+  st.setProperty('--accent-ink', dark ? '#0d1020' : '#ffffff');
 }
 
-function drawScene(sc, time, mul) {
-  if (mul <= 0.01) return;
-  const c = bgCtx, dark = isDark(), t = time * sc.speed * .5 + sc.phase;
-  const hsla = (i, a, l) => `hsla(${sc.hues[((i % 4) + 4) % 4]},${sc.sat}%,${l}%,${a})`;
-  const cx = bgW / 2, cy = bgH / 2, diag = Math.hypot(bgW, bgH);
-
-  // 1. translucent morphing blobs
-  c.save();
-  c.globalCompositeOperation = dark ? 'lighter' : 'source-over';
-  sc.blobs.forEach((b, i) => {
-    const x = bgW * (.5 + b.ax * Math.sin(t * b.fx + b.px)), y = bgH * (.5 + b.ay * Math.cos(t * b.fy + b.py));
-    const R = Math.min(bgW, bgH) * b.r * (1 + .12 * Math.sin(t * b.fr + b.pr)) * 1.1;
-    const a = b.a * mul * (dark ? .8 : 1), l = dark ? 66 : 62;
-    const g = c.createRadialGradient(x, y, 0, x, y, R * 1.15);
-    g.addColorStop(0, hsla(i, a, l)); g.addColorStop(.55, hsla(i, a * .5, l)); g.addColorStop(1, hsla(i, 0, l));
-    c.fillStyle = g;
-    c.beginPath();
-    for (let k = 0; k <= 72; k++) {
-      const th = k / 72 * TAU;
-      const rr = R * (1 + b.amp * Math.sin(b.lobes * th + t * b.sp + b.ph) + b.amp * .5 * Math.sin((b.lobes + 2) * th - t * b.sp * .7));
-      const px = x + Math.cos(th + b.rot * t) * rr, py = y + Math.sin(th + b.rot * t) * rr;
-      if (k) c.lineTo(px, py); else c.moveTo(px, py);
-    }
-    c.closePath(); c.fill();
-  });
-  c.restore();
-
-  // 2. subtle psychedelic line pattern
-  const alpha = (dark ? .15 : .18) * mul, ll = dark ? 76 : 42;
-  const ln = (i, a) => hsla(i, a, ll);
-  c.save();
-  c.lineWidth = 1.1; c.lineJoin = 'round';
-  const trace = (pts, close) => { pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); if (close) c.closePath(); };
-  if (sc.pattern === 'contours') {
-    const step = sc.s * 1.15, maxR = diag * .62, maxN = Math.ceil(maxR / step), off = ((t * 5) % step + step) % step;
-    [[cx + Math.sin(t * .21) * bgW * .28, cy + Math.cos(t * .17) * bgH * .24], [cx + Math.cos(t * .15 + 1) * bgW * .3, cy + Math.sin(t * .19 + 2) * bgH * .28]].forEach(([x0, y0], ci) => {
-      for (let n = 0; n < maxN; n++) {
-        const r = n * step + off, al = alpha * (1 - r / maxR);
-        if (al <= .004) continue;
-        c.strokeStyle = ln(n + ci, al); c.beginPath();
-        for (let k = 0; k <= 72; k++) {
-          const th = k / 72 * TAU, rr = r * (1 + .05 * Math.sin(sc.k * th + t * .7 + n * .3 + ci * 2) + .03 * Math.sin((sc.k + 3) * th - t * .5));
-          const x = x0 + Math.cos(th) * rr, y = y0 + Math.sin(th) * rr;
-          if (k) c.lineTo(x, y); else c.moveTo(x, y);
-        }
-        c.closePath(); c.stroke();
-      }
-    });
-  } else if (sc.pattern === 'spiral') {
-    const turns = 3, maxR = diag * .62, pitch = maxR / (turns * TAU), rot = t * sc.spin * 3;
-    const ox = cx + Math.sin(t * .13) * bgW * .1, oy = cy + Math.cos(t * .11) * bgH * .08;
-    for (let a = 0; a < sc.arms; a++) {
-      c.strokeStyle = ln(a, alpha); c.beginPath();
-      let first = true;
-      for (let th = .2; th < turns * TAU; th += .07) {
-        const r = th * pitch * (1 + .07 * Math.sin(th * 1.5 - t * .8)), ang = th + rot + a * TAU / sc.arms;
-        const x = ox + Math.cos(ang) * r, y = oy + Math.sin(ang) * r;
-        if (first) { c.moveTo(x, y); first = false; } else c.lineTo(x, y);
-      }
-      c.stroke();
-    }
-  } else if (sc.pattern === 'mandala') {
-    const copies = 9, R = diag * .34;
-    const ox = cx + Math.sin(t * .1) * bgW * .08, oy = cy + Math.cos(t * .12) * bgH * .06;
-    for (let i = 1; i <= copies; i++) {
-      const sR = R * i / copies * 1.9, rot = t * sc.spin * (i % 2 ? 1 : -1) * 2 + i * .12, breathe = .72 + .28 * Math.sin(t * .6 + i * .5);
-      c.strokeStyle = ln(i, alpha * (.55 + .6 * (1 - i / copies))); c.beginPath();
-      for (let th = 0; th <= TAU + .03; th += .03) {
-        const rr = sR * Math.cos(sc.k * th) * breathe, a = th + rot;
-        const x = ox + Math.cos(a) * rr, y = oy + Math.sin(a) * rr;
-        if (th === 0) c.moveTo(x, y); else c.lineTo(x, y);
-      }
-      c.stroke();
-    }
-  } else if (sc.pattern === 'flow') {
-    const ls = sc.s * .55, n = Math.ceil(diag / 2 / ls) + 1, half = diag / 2;
-    c.translate(cx, cy); c.rotate(sc.angle);
-    for (let j = -n; j <= n; j++) {
-      c.strokeStyle = ln(j + n, alpha); c.beginPath();
-      for (let x = -half; x <= half; x += 18) {
-        const y = j * ls + ls * 1.4 * Math.sin(x * sc.f1 + j * .28 + t * .8) + ls * .9 * Math.sin(x * sc.f2 - j * .17 - t * .6) + ls * .7 * Math.sin((x * .5 + j * ls) * sc.f1 * .8 + t * .4);
-        if (x === -half) c.moveTo(x, y); else c.lineTo(x, y);
-      }
-      c.stroke();
-    }
-  } else if (sc.pattern === 'moire') {
-    const step = sc.s * .5, maxN = Math.ceil(diag * .7 / step);
-    [[cx + Math.sin(t * .2) * bgW * .18, cy + Math.cos(t * .17) * bgH * .14, 0], [cx + Math.cos(t * .23 + 1) * bgW * .22, cy + Math.sin(t * .19) * bgH * .16, 2]].forEach(([x0, y0, ci]) => {
-      c.strokeStyle = ln(ci, alpha * .8); c.beginPath();
-      for (let n = 1; n <= maxN; n++) { c.moveTo(x0 + n * step, y0); c.arc(x0, y0, n * step, 0, TAU); }
-      c.stroke();
-    });
-  } else { // tunnel
-    const rings = 26, phase = (t * .05) % 1, R = diag * .62;
-    const ox = cx + Math.sin(t * .12) * bgW * .08, oy = cy + Math.cos(t * .1) * bgH * .06;
-    for (let j = 0; j < rings; j++) {
-      const u = (j + phase) / rings, r = R * u * u + 4, rot = sc.twist * u * 2 + t * .12;
-      const al = alpha * Math.sin(Math.min(1, u) * Math.PI) * 1.4;
-      c.strokeStyle = ln(j, al); c.beginPath();
-      for (let s = 0; s <= sc.sides; s++) {
-        const a = rot + s / sc.sides * TAU, rr = r * (1 + .06 * Math.sin(t * .7 + j));
-        const x = ox + Math.cos(a) * rr, y = oy + Math.sin(a) * rr;
-        if (s) c.lineTo(x, y); else c.moveTo(x, y);
-      }
-      c.stroke();
-    }
-  }
-  c.restore();
+function applyTheme() {
+  if (settings.theme === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', settings.theme);
+  document.querySelectorAll('[data-theme-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeOpt === settings.theme)));
+  applyPalette();
+  if (reduceMotion && scene) renderBg(performance.now());
 }
 function renderBg(now) {
-  bgCtx.clearRect(0, 0, bgW, bgH);
   const t = now / 1000;
   if (prevScene) {
     const f = Math.min(1, (now - scene.born) / 1600), e = f * f * (3 - 2 * f);
-    drawScene(prevScene, t, 1 - e); drawScene(scene, t, e);
+    drawScene(prevScene, t, 1); drawScene(scene, t, e);
     if (f >= 1) prevScene = null;
   } else drawScene(scene, t, 1);
 }
@@ -1117,33 +1648,48 @@ function bgFrame(now) {
 function startBg() { if (!reduceMotion && !bgRaf) bgRaf = requestAnimationFrame(bgFrame); }
 function resizeBg() {
   bgW = window.innerWidth; bgH = window.innerHeight;
-  const dpr = Math.min(1.5, window.devicePixelRatio || 1);
-  bgCanvas.width = Math.round(bgW * dpr); bgCanvas.height = Math.round(bgH * dpr);
-  bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if (reduceMotion) renderBg(performance.now());
+  bgCanvas.width = Math.ceil(bgW / BG_SCALE); bgCanvas.height = Math.ceil(bgH / BG_SCALE);
+  bgCtx.setTransform(1 / BG_SCALE, 0, 0, 1 / BG_SCALE, 0, 0);
+  if (reduceMotion && scene) renderBg(performance.now());
 }
 function newScene(announce) {
   prevScene = scene;
   scene = makeScene();
+  applyPalette();
   if (reduceMotion) { prevScene = null; renderBg(performance.now()); }
-  if (announce) toast('Scene: ' + scene.name, 1800);
 }
+(function makeGrain() {
+  try {
+    const g = document.createElement('canvas'); g.width = g.height = 160;
+    const x = g.getContext('2d'), img = x.createImageData(160, 160);
+    for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255 | 0; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 24; }
+    x.putImageData(img, 0, 0);
+    document.querySelector('.grain').style.backgroundImage = `url(${g.toDataURL()})`;
+  } catch (e) {}
+})();
 window.addEventListener('resize', resizeBg);
-if (darkMQ.addEventListener) darkMQ.addEventListener('change', () => { if (reduceMotion && scene) renderBg(performance.now()); });
+if (darkMQ.addEventListener) darkMQ.addEventListener('change', () => { applyPalette(); if (reduceMotion && scene) renderBg(performance.now()); });
 document.querySelectorAll('[data-theme-opt]').forEach(b => b.addEventListener('click', () => { settings.theme = b.dataset.themeOpt; store.set('fc:settings', settings); applyTheme(); }));
-applyTheme();
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { cancelAnimationFrame(bgRaf); bgRaf = 0; } else startBg();
 });
 $('#scene').addEventListener('click', e => { e.currentTarget.classList.toggle('spun'); newScene(true); });
-resizeBg(); newScene(false); startBg();
+resizeBg(); newScene(false); applyTheme(); startBg();
 
 window.addEventListener('keydown', e => {
   if (!scrim.hidden) {
-    if (e.key === 'Escape' && !menuDlg.hidden) closeDlgs();
+    if (e.key === 'Escape' && !recDlg.hidden) { closeRecorder(); return; }
+    if (e.key === 'Escape' && (!menuDlg.hidden || !lbDlg.hidden || !infoDlg.hidden)) { const lb = !lbDlg.hidden || !infoDlg.hidden; closeDlgs(); if (lb && G.won) openDlg('winDlg'); }
     return;
   }
   if (e.target && e.target.tagName === 'INPUT') return;
+  if (reviewing) {
+    if (e.key === 'ArrowLeft') { stopPlay(); showPos(RV.idx - 1); }
+    else if (e.key === 'ArrowRight') { stopPlay(); showPos(RV.idx + 1); }
+    else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+    else if (e.key === 'Escape') exitReview();
+    return;
+  }
   const k = e.key.toLowerCase();
   if (k === 'u' || (k === 'z' && (e.ctrlKey || e.metaKey))) { e.preventDefault(); undo(); }
   else if (k === 'h') showHint();
@@ -1152,12 +1698,433 @@ window.addEventListener('keydown', e => {
   else if (k === 'escape') clearSel();
 });
 
-// Page-wide guard against double-tap zoom (Safari and Firefox on iPhone).
-// A second tap within 380ms has its zoom cancelled; buttons still get their click.
-let lastTouchEnd = 0;
+/* ---------- challenges and leaderboard ----------
+   API_URL is the address of your Cloudflare Worker. While it's empty, the leaderboard stays hidden;
+   challenge links work either way, because they only need the deal number and a score. */
+const API_URL = '';
+const SITE_URL = 'https://malcoz.github.io/freecell/';
+const playerId = (() => {
+  let id = store.get('fc:player', null);
+  if (!id) { id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); store.set('fc:player', id); }
+  return id;
+})();
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const playerName = () => (settings.name || '').trim().slice(0, 20) || 'Player';
+const shareBase = () => (/github\.io$/.test(location.hostname) ? location.origin + location.pathname : SITE_URL);
+function readChallenge() {
+  try {
+    const q = new URLSearchParams(location.search), seed = Number(q.get('deal'));
+    if (!Number.isInteger(seed) || seed < 1 || seed > 999999) return null;
+    const beat = Number(q.get('beat'));
+    const secs = Number(q.get('t')), ok = Number.isInteger(beat) && beat > 0, tOk = Number.isInteger(secs) && secs >= 0;
+    const msg = (q.get('msg') || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 80);
+    const day = /^\d{4}-\d{2}-\d{2}$/.test(q.get('day') || '') ? q.get('day') : null;
+    return { seed, beat: ok ? beat : null, secs: tOk ? secs : null, score: ok && tOk ? scoreOf(beat, secs) : null, by: (q.get('by') || 'A friend').slice(0, 20), msg, day };
+  } catch (e) { return null; }
+}
+async function shareChallenge() {
+  const u = new URL(shareBase());
+  u.searchParams.set('deal', G.seed); u.searchParams.set('beat', G.moves); u.searchParams.set('t', G.elapsed); u.searchParams.set('by', playerName());
+  if (G.daily) u.searchParams.set('day', G.daily.date);
+  const note = $('#chMsg').value.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 80);
+  if (note) u.searchParams.set('msg', note);
+  const url = u.toString(), btn = $('#btnChallenge');
+  const where = G.daily ? `FreeCell Daily #${G.daily.n}` : `FreeCell deal #${G.seed}`;
+  const text = (note ? `${note} ` : '') + `I scored ${fmtScore(G.score)} on ${where} (${G.moves} moves, ${fmt(G.elapsed)}). Can you beat it?`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'FreeCell challenge', text, url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  let copied = false;
+  try { await navigator.clipboard.writeText(`${text} ${url}`); copied = true; } catch (e) {}
+  $('#shareUrl').value = url; $('#shareBox').hidden = false;
+  btn.textContent = copied ? 'Link copied' : 'Copy the link below';
+  setTimeout(() => { btn.textContent = 'Challenge a friend'; }, 2600);
+  if (!copied) { $('#shareUrl').focus(); $('#shareUrl').select(); }
+}
+async function copyShareUrl() {
+  const box = $('#shareUrl'), btn = $('#btnCopy');
+  box.focus(); box.select();
+  let ok = false;
+  try { await navigator.clipboard.writeText(box.value); ok = true; } catch (e) { try { ok = document.execCommand('copy'); } catch (e2) {} }
+  btn.textContent = ok ? 'Copied' : 'Select and copy';
+  setTimeout(() => { btn.textContent = 'Copy'; }, 2200);
+}
+async function submitScore() {
+  if (!API_URL) return null;
+  try {
+    const r = await fetch(API_URL + '/score', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deal: G.seed, name: playerName(), player: playerId, seconds: G.elapsed, moves: G.full })
+    });
+    return r.ok ? await r.json() : null;
+  } catch (e) { return null; }
+}
+async function openLeaderboard(seed) {
+  if (!API_URL) return;
+  const list = $('#lbList');
+  $('#lbTitle').textContent = G.daily && G.seed === seed ? `Daily #${G.daily.n} · ${prettyDate(G.daily.date)}` : `Deal #${seed}`;
+  list.innerHTML = '<p class="lbnote">Loading…</p>';
+  openDlg('lbDlg');
+  try {
+    const r = await fetch(`${API_URL}/scores?deal=${seed}&player=${encodeURIComponent(playerId)}`);
+    const d = await r.json();
+    if (!d.scores || !d.scores.length) { list.innerHTML = '<p class="lbnote">No wins recorded on this deal yet. Be the first.</p>'; return; }
+    list.innerHTML = '<ol class="lbrows">' + d.scores.map(s =>
+      `<li class="${s.mine ? 'mine' : ''}"><span class="lbrank">${s.rank}</span><span class="lbname">${esc(s.name)}${s.mine ? ' (you)' : ''}</span><span class="lbmoves">${fmtScore(s.score)}</span><span class="lbtime">${s.moves} · ${fmt(s.seconds)}</span></li>`
+    ).join('') + '</ol>' + `<p class="lbnote">${d.total} player${d.total === 1 ? '' : 's'} solved this deal. Ranked by score: fewer moves and less time both count.</p>`;
+  } catch (e) { list.innerHTML = '<p class="lbnote">Couldn’t reach the leaderboard. Check your connection and try again.</p>'; }
+}
+document.querySelectorAll('.needs-api').forEach(el => { el.hidden = !API_URL; });
+$('#btnChallenge').addEventListener('click', shareChallenge);
+$('#btnCopy').addEventListener('click', copyShareUrl);
+$('#btnWinBoard').addEventListener('click', () => openLeaderboard(G.seed));
+$('#btnBoard').addEventListener('click', () => openLeaderboard(G.seed));
+$('#lbClose').addEventListener('click', () => { closeDlgs(); if (G.won) openDlg('winDlg'); });
+$('#optSound').addEventListener('change', e => { settings.sound = e.target.checked; store.set('fc:settings', settings); if (settings.sound) sfx('place'); });
+$('#nameInput').addEventListener('change', e => { settings.name = e.target.value.replace(/[<>]/g, '').trim().slice(0, 20); e.target.value = settings.name; store.set('fc:settings', settings); });
+
+/* ---------- your own click sound ----------
+   The player records a short sound (a tap, snap or click). It's trimmed to the moment of the
+   sound, cleaned up and saved on this device only; it's never uploaded anywhere. */
+let actx = null, myBuf = null, pendingBuf = null, lastUi = 0;
+function audio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+const b64ToBytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+function bytesToB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+async function loadMySound() {
+  const b64 = store.get('fc:sound', null);
+  if (!b64) { myBuf = null; return; }
+  try { audio(); myBuf = await actx.decodeAudioData(b64ToBytes(b64).buffer); } catch (e) { myBuf = null; }
+}
+function playBuf(buf, rate, gain, when = 0) {
+  if (!buf) return;
+  const s = actx.createBufferSource(), g = actx.createGain();
+  s.buffer = buf; s.playbackRate.value = rate; g.gain.value = gain;
+  s.connect(g); g.connect(actx.destination); s.start(actx.currentTime + when);
+}
+let popNoise = null;
+function pop(rate, gain, when = 0, soft = false) {
+  const t = actx.currentTime + 0.004 + when;
+  const o = actx.createOscillator(), g = actx.createGain(), lp = actx.createBiquadFilter();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(720 * rate, t); o.frequency.exponentialRampToValueAtTime(260 * rate, t + 0.035);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + (soft ? 0.006 : 0.003)); g.gain.exponentialRampToValueAtTime(0.0001, t + (soft ? 0.085 : 0.07));
+  lp.type = 'lowpass'; lp.frequency.value = soft ? 1900 : 2400;
+  o.connect(lp); lp.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.09);
+  if (!popNoise) { popNoise = actx.createBuffer(1, Math.floor(actx.sampleRate * 0.01), actx.sampleRate); const d = popNoise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const s = actx.createBufferSource(), f = actx.createBiquadFilter(), ng = actx.createGain();
+  s.buffer = popNoise; f.type = 'bandpass'; f.frequency.value = 3000 * rate; f.Q.value = 1.5;
+  ng.gain.setValueAtTime(gain * (soft ? 0.08 : 0.25), t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.004);
+  s.connect(f); f.connect(ng); ng.connect(actx.destination); s.start(t);
+}
+function sfx(kind) {
+  if (!settings.sound) return;
+  if (!myBuf) {
+    try {
+      audio();
+      const j = 1 + (Math.random() * 2 - 1) * 0.04;
+      // the default: a softer, slightly higher take on the "can't move there" sound
+      if (kind === 'place') pop(0.78 * j, 0.2, 0, true);
+      else if (kind === 'ui') { const now = performance.now(); if (now - lastUi < 60) return; lastUi = now; pop(1.0 * j, 0.08, 0, true); }
+      else if (kind === 'error') pop(0.6, 0.25);
+      else if (kind === 'win') { pop(0.78, 0.2, 0, true); pop(0.98, 0.2, 0.1, true); pop(1.17, 0.2, 0.2, true); }
+    } catch (e) {}
+    return;
+  }
+  try {
+    audio();
+    const j = 1 + (Math.random() * 2 - 1) * 0.04;      // tiny pitch variation so repeats feel natural
+    if (kind === 'place') playBuf(myBuf, j, 0.8);
+    else if (kind === 'ui') { const now = performance.now(); if (now - lastUi < 60) return; lastUi = now; playBuf(myBuf, 1.3 * j, 0.3); }
+    else if (kind === 'error') playBuf(myBuf, 0.72, 0.55);
+    else if (kind === 'win') { playBuf(myBuf, 1, 0.7); playBuf(myBuf, 1.26, 0.7, 0.12); playBuf(myBuf, 1.5, 0.7, 0.24); }
+  } catch (e) {}
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('button') && !e.target.closest('#recDlg')) sfx('ui'); });
+
+// Find the sound in the recording, cut it out, fade its edges, even out its volume, and store it small.
+function trimClip(buf) {
+  const sr = buf.sampleRate, x = buf.getChannelData(0);
+  let peak = 0;
+  for (let i = 0; i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]));
+  if (peak < 0.02) return null;
+  const thr = Math.max(0.015, peak * 0.15);
+  let onset = 0;
+  while (onset < x.length && Math.abs(x[onset]) < thr) onset++;
+  const start = Math.max(0, onset - Math.round(0.004 * sr));
+  const maxLen = Math.round(0.35 * sr), quietRun = Math.round(0.03 * sr), quiet = peak * 0.05;
+  let end = Math.min(x.length, start + maxLen), run = 0;
+  for (let i = onset + Math.round(0.02 * sr); i < end; i++) {
+    run = Math.abs(x[i]) < quiet ? run + 1 : 0;
+    if (run > quietRun) { end = i; break; }
+  }
+  end = Math.max(end, start + Math.round(0.05 * sr));
+  const outRate = 22050, n = Math.max(1, Math.round((end - start) * outRate / sr)), y = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const p = start + i * sr / outRate, k = Math.floor(p), f = p - k;
+    y[i] = (x[k] || 0) * (1 - f) + (x[k + 1] || 0) * f;
+  }
+  let pk = 0;
+  for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(y[i]));
+  const fadeIn = Math.round(0.002 * outRate), fadeOutFrom = Math.round(n * 0.6);
+  for (let i = 0; i < n; i++) {
+    let g = 0.85 / (pk || 1);
+    if (i < fadeIn) g *= i / fadeIn;
+    if (i > fadeOutFrom) g *= Math.pow(1 - (i - fadeOutFrom) / (n - fadeOutFrom), 2);
+    y[i] *= g;
+  }
+  return { data: y, rate: outRate };
+}
+function encodeWav(clip) {
+  const { data, rate } = clip, n = data.length, out = new DataView(new ArrayBuffer(44 + n * 2));
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) out.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); out.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true);
+  out.setUint32(24, rate, true); out.setUint32(28, rate * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true);
+  w(36, 'data'); out.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, data[i])) * 0x7fff, true);
+  return new Uint8Array(out.buffer);
+}
+async function recordClip(ms) {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+  audio();
+  const types = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg'];
+  const type = types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
+  const rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined), chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const src = actx.createMediaStreamSource(stream), an = actx.createAnalyser();
+  an.fftSize = 512; src.connect(an);
+  const lvl = new Uint8Array(an.fftSize), meter = $('#recMeter');
+  let live = true;
+  (function tick() {
+    if (!live) return;
+    an.getByteTimeDomainData(lvl);
+    let m = 0; for (const v of lvl) m = Math.max(m, Math.abs(v - 128));
+    meter.style.width = Math.min(100, m / 1.28 * 1.6) + '%';
+    requestAnimationFrame(tick);
+  })();
+  const stopped = new Promise(r => { rec.onstop = r; });
+  rec.start();
+  await sleep(ms);
+  rec.stop(); await stopped;
+  live = false; meter.style.width = '0%';
+  src.disconnect(); stream.getTracks().forEach(t => t.stop());
+  const blob = new Blob(chunks, { type: rec.mimeType || type || 'audio/webm' });
+  const decoded = await actx.decodeAudioData(await blob.arrayBuffer());
+  return trimClip(decoded);
+}
+let pendingWav = null;
+async function doRecord() {
+  const btn = $('#btnRec'), text = $('#recText');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    text.textContent = 'This browser can’t record sound. Try it on your phone or in another browser.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Recording…';
+  text.textContent = 'Make your sound now: a tap, snap or click.';
+  try {
+    const clip = await recordClip(1600);
+    if (!clip) { text.textContent = 'That was too quiet. Try again a little closer to the microphone.'; }
+    else {
+      pendingWav = encodeWav(clip);
+      pendingBuf = await actx.decodeAudioData(pendingWav.slice().buffer);
+      playBuf(pendingBuf, 1, 0.8);
+      text.textContent = 'Got it. Play it back, then keep it or try again.';
+      $('#btnRecPlay').hidden = false; $('#btnRecUse').hidden = false;
+    }
+  } catch (e) {
+    text.textContent = 'The microphone isn’t available. Allow microphone access for this site and try again.';
+  }
+  btn.disabled = false; btn.textContent = 'Record again';
+}
+function openRecorder() {
+  pendingWav = null; pendingBuf = null;
+  $('#btnRec').textContent = 'Record'; $('#btnRecPlay').hidden = true; $('#btnRecUse').hidden = true;
+  $('#recText').textContent = 'Record a short sound, like a tap on the table, a finger snap or a click of your tongue. It will play softly whenever you move a card.';
+  openDlg('recDlg');
+}
+function closeRecorder() {
+  settings.soundAsked = true; store.set('fc:settings', settings);
+  closeDlgs();
+}
+$('#btnRec').addEventListener('click', doRecord);
+$('#btnRecPlay').addEventListener('click', () => { audio(); playBuf(pendingBuf, 1, 0.8); });
+$('#btnRecUse').addEventListener('click', async () => {
+  if (!pendingWav) return;
+  store.set('fc:sound', bytesToB64(pendingWav));
+  settings.sound = true;
+  await loadMySound();
+  closeRecorder();
+  $('#btnSoundReset').hidden = false;
+});
+$('#btnRecSkip').addEventListener('click', closeRecorder);
+$('#btnMySound').addEventListener('click', () => { closeDlgs(); openRecorder(); });
+$('#btnSoundReset').addEventListener('click', () => { store.set('fc:sound', null); try { localStorage.removeItem('fc:sound'); } catch (e) {} myBuf = null; $('#btnSoundReset').hidden = true; sfx('place'); });
+$('#btnSoundReset').hidden = !store.get('fc:sound', null);
+loadMySound();
+
+/* ---------- about this deal ----------
+   The solver plays the deal from the start; how hard it had to search sets the difficulty.
+   Levels were calibrated on 200 random deals: about 30% Easy, 30% Medium, 25% Hard, 15% Very hard. */
+const infoCache = {};
+const DIFF = [
+  { max: 150,   name: 'Easy',      color: '#2f9e6b', text: 'Most cards fall into place. A good warm-up.' },
+  { max: 500,   name: 'Medium',    color: '#1f8fa0', text: 'Takes some planning, but the path is there.' },
+  { max: 2500,  name: 'Hard',      color: '#c98a12', text: 'Needs careful use of free cells and empty columns.' },
+  { max: 1e9,   name: 'Very hard', color: '#d4651f', text: 'Tight from the start. Expect to think several moves ahead.' }
+];
+const isPrime = n => { if (n < 2) return false; for (let i = 2; i * i <= n; i++) if (n % i === 0) return false; return true; };
+function numberFacts(n) {
+  const s = String(n), out = [];
+  if (s.length > 1 && s === s.split('').reverse().join('')) out.push(`${n} reads the same backwards.`);
+  if (isPrime(n)) out.push(`${n} is a prime number.`);
+  if (/^(\d)\1+$/.test(s)) out.push(`Every digit of ${n} is the same.`);
+  if (n % 1000 === 0) out.push(`${n.toLocaleString('en-US')} is a nice round number.`);
+  if (/^(?:0?1(?=2)|1(?=2)|2(?=3)|3(?=4)|4(?=5)|5(?=6)|6(?=7)|7(?=8)|8(?=9)|9)+\d$/.test(s) && s.length > 2) out.push(`The digits of ${n} count upwards.`);
+  return out;
+}
+async function dealInfo(seed) {
+  if (infoCache[seed]) return infoCache[seed];
+  const cols = dealCols(seed), start = { cols: cols.map(c => c.slice()), cells: [null, null, null, null], found: [0, 0, 0, 0] };
+  const r = await solveAsync(start, { maxNodes: 80000 });
+  const facts = [];
+  if (r.sol) facts.push(`A computer found a win in ${r.sol.moves.length} moves. Can you match it?`);
+  // aces
+  let buried = 0, free = 0, deepest = null;
+  for (let su = 0; su < 4; su++) {
+    const id = su * 13;
+    cols.forEach((c, i) => { const p = c.indexOf(id); if (p >= 0) { const d = c.length - 1 - p; buried += d; if (!d) free++; if (!deepest || d > deepest.d) deepest = { d, id, col: i + 1 }; } });
+  }
+  facts.push(free === 4 ? 'All four aces are ready to play right away.'
+    : `The aces start under ${buried} card${buried === 1 ? '' : 's'} in total` + (free ? `, and ${free} ${free === 1 ? 'is' : 'are'} ready right away.` : '.'));
+  if (deepest && deepest.d >= 4) facts.push(`The hardest ace to reach is ${cardName(deepest.id)}, under ${deepest.d} cards in column ${deepest.col}.`);
+  // kings at the top of a column are where they belong
+  const topKings = cols.filter(c => c[0] % 13 === 12).length;
+  if (topKings) facts.push(`${topKings} king${topKings === 1 ? ' starts' : 's start'} at the top of a column, where ${topKings === 1 ? 'it’s' : 'they’re'} no trouble.`);
+  // ready-made runs
+  let best = { n: 1, col: 0 };
+  cols.forEach((c, i) => { const n = sRunLen(c); if (n > best.n) best = { n, col: i + 1 }; });
+  if (best.n >= 3) facts.push(`Column ${best.col} already has a run of ${best.n} cards in order.`);
+  facts.push(`There are ${sMoves(start).length} possible first moves.`);
+  facts.push(...numberFacts(seed));
+  let diff;
+  if (r.sol) diff = DIFF.find(d => r.nodes <= d.max);
+  else if (r.exhausted) diff = { name: 'Impossible', color: '#d93047', text: 'The computer checked every possibility. This deal can’t be won, which is very rare.' };
+  else diff = { name: 'Extreme', color: '#d93047', text: 'The computer couldn’t find a win quickly. It may still be winnable, but it’s a real test.' };
+  return (infoCache[seed] = { diff, facts });
+}
+async function openInfo() {
+  const seed = G.seed, body = $('#infoBody');
+  $('#infoTitle').textContent = `Deal #${seed}`;
+  body.innerHTML = '<p class="lbnote">Studying this deal…</p>';
+  openDlg('infoDlg');
+  const info = await dealInfo(seed);
+  if (G.seed !== seed || infoDlg.hidden) return;
+  body.innerHTML = `<div class="diffrow"><span class="badge" style="--bc:${info.diff.color}">${info.diff.name}</span></div>` +
+    `<p class="difftext">${info.diff.text}</p>` +
+    `<ul class="facts">${info.facts.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`;
+  if (API_URL) {
+    try {
+      const d = await (await fetch(`${API_URL}/scores?deal=${seed}`)).json();
+      if (d.total && !infoDlg.hidden && G.seed === seed) body.querySelector('.facts').insertAdjacentHTML('beforeend',
+        `<li>${d.total} player${d.total === 1 ? ' has' : 's have'} solved it. The best score is ${fmtScore(d.scores[0].score)}.</li>`);
+    } catch (e) {}
+  }
+}
+$('#dealChip').addEventListener('click', openInfo);
+$('#btnInfo').addEventListener('click', () => { closeDlgs(); openInfo(); });
+$('#infoClose').addEventListener('click', () => { closeDlgs(); if (G.won) openDlg('winDlg'); });
+
+/* ---------- daily deal ----------
+   Everyone gets the same deal on the same calendar date. The deal is picked from the date,
+   and if the solver can't find a win for it, the next number is tried, so the daily is always winnable.
+   Results and the daily streak are kept on this device. */
+const DAILY_START = '2026-10-25';
+const dayStr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const todayStr = () => dayStr(new Date());
+const dailyNumber = ds => Math.round((Date.parse(ds + 'T12:00:00') - Date.parse(DAILY_START + 'T12:00:00')) / 864e5) + 1;
+const prettyDate = ds => new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function dateHashSeed(ds) {
+  let h = 2166136261;
+  for (const ch of 'freecell-daily-' + ds) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return (h >>> 0) % 999999 + 1;
+}
+async function dailySeed(ds) {
+  const key = 'fc:dseed:' + ds, known = store.get(key, null);
+  if (known) return known;
+  let seed = dateHashSeed(ds);
+  for (let i = 0; i < 12; i++) {
+    const cols = dealCols(seed);
+    const r = await solveAsync({ cols, cells: [null, null, null, null], found: [0, 0, 0, 0] }, { maxNodes: 40000 });
+    if (r.sol) break;
+    seed = seed % 999999 + 1;
+  }
+  store.set(key, seed);
+  return seed;
+}
+let daily = Object.assign({ last: null, streak: 0, best: 0, results: {} }, store.get('fc:daily', {}));
+function recordDaily() {
+  const ds = G.daily.date, today = todayStr(), prev = daily.results[ds];
+  const res = { score: G.score, moves: G.moves, secs: G.elapsed };
+  if (!prev || res.score > prev.score) daily.results[ds] = res;
+  let first = false;
+  if (ds === today && daily.last !== today) {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    daily.streak = daily.last === dayStr(y) ? daily.streak + 1 : 1;
+    daily.best = Math.max(daily.best, daily.streak);
+    daily.last = today; first = true;
+  }
+  const keys = Object.keys(daily.results).sort();
+  while (keys.length > 60) delete daily.results[keys.shift()];
+  store.set('fc:daily', daily);
+  return { first, improved: !prev || res.score > prev.score, prev };
+}
+function currentStreak() {
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  return daily.last === todayStr() || daily.last === dayStr(y) ? daily.streak : 0;
+}
+async function startDaily(ds) {
+  ds = ds || todayStr();
+  closeDlgs();
+  toast('Getting today’s deal ready…', 1500);
+  const seed = await dailySeed(ds);
+  newDeal(seed, { date: ds, n: dailyNumber(ds) });
+}
+function renderDailyStatus() {
+  const ds = todayStr(), n = dailyNumber(ds), r = daily.results[ds], streak = currentStreak();
+  $('#btnDaily').textContent = r ? `Play Daily #${n} again` : `Play today’s deal · Daily #${n}`;
+  $('#dailyStatus').textContent = (r ? `Solved today: ${fmtScore(r.score)} (${r.moves} moves, ${fmt(r.secs)}).` : 'Not solved yet today. Everyone gets the same deal.') +
+    (streak ? ` Daily streak: ${streak} day${streak === 1 ? '' : 's'}.` : '');
+}
+$('#btnDaily').addEventListener('click', () => startDaily());
+$('#btnWinDaily').addEventListener('click', () => startDaily());
+
+/* ---------- iPhone zoom protection ----------
+   Safari on iPhone ignores maximum-scale / user-scalable in the browser, and
+   touch-action alone does not stop its double-tap zoom. So:
+   1. cancel the second tap of a double tap (non-passive touchend),
+   2. cancel two-finger touches and Safari's pinch gesture events,
+   3. if the page still ends up zoomed, snap it back to 100% by briefly
+      rewriting the viewport tag (the one lever a page has over Safari's zoom),
+   4. if even that fails, unlock pinching everywhere so it can never get stuck. */
+const vpMeta = document.querySelector('meta[name="viewport"]');
+const VP = [
+  'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
+  'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, viewport-fit=cover'
+];
+let vpIdx = 0, allowPinch = false, lastTouchEnd = 0, lastFix = 0, fixT = null;
+const isZoomed = () => !!window.visualViewport && visualViewport.scale > 1.02;
+
 document.addEventListener('touchend', e => {
   const now = Date.now();
-  if (now - lastTouchEnd < 380 && e.changedTouches.length === 1) {
+  if (now - lastTouchEnd < 500 && e.cancelable && !allowPinch) {
     const el = e.target;
     if (!(el.closest && el.closest('input'))) {
       e.preventDefault();
@@ -1167,9 +2134,51 @@ document.addEventListener('touchend', e => {
   }
   lastTouchEnd = now;
 }, { passive: false });
+const stopMulti = e => { if (e.touches.length > 1 && e.cancelable && !allowPinch) e.preventDefault(); };
+document.addEventListener('touchstart', stopMulti, { passive: false });
+document.addEventListener('touchmove', stopMulti, { passive: false });
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+  document.addEventListener(ev, e => { if (!allowPinch) e.preventDefault(); }, { passive: false }));
+document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+function checkZoom() {
+  if (!isZoomed()) {
+    if (allowPinch) { allowPinch = false; document.documentElement.classList.remove('zoomed'); }
+    return;
+  }
+  if (allowPinch) return;                       // the player is pinching back out; don't fight them
+  const now = Date.now();
+  if (now - lastFix < 250) return;
+  lastFix = now;
+  vpIdx = 1 - vpIdx;                            // a real change makes Safari re-apply the limits
+  vpMeta.setAttribute('content', VP[vpIdx]);
+  clearTimeout(fixT);
+  fixT = setTimeout(() => {
+    if (isZoomed()) {
+      allowPinch = true;
+      document.documentElement.classList.add('zoomed');
+      toast('Pinch with two fingers to zoom back out.', 4500);
+    }
+  }, 800);
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', checkZoom);
+  visualViewport.addEventListener('scroll', checkZoom);
+}
+window.addEventListener('pageshow', checkZoom);
 
 /* ---------- start ---------- */
-G = newState(randomSeed());
+const incoming = readChallenge();
+G = newState(incoming ? incoming.seed : randomSeed());
+if (incoming) {
+  G.challenge = incoming;
+  if (incoming.day) G.daily = { date: incoming.day, n: dailyNumber(incoming.day) };
+  const label = incoming.day ? `Daily #${dailyNumber(incoming.day)}` : `deal #${incoming.seed}`;
+  const msg = incoming.score ? `${incoming.by} challenges you: beat ${fmtScore(incoming.score)} (${incoming.beat} moves, ${fmt(incoming.secs)}) on ${label}`
+    : incoming.beat ? `${incoming.by} challenges you: beat ${incoming.beat} moves on deal #${incoming.seed}` : `Deal #${incoming.seed}`;
+  const full = incoming.msg ? `${incoming.by}: \u201c${incoming.msg}\u201d ` + msg.replace(`${incoming.by} challenges you: b`, 'B') : msg;
+  setTimeout(() => toast(full, incoming.msg ? 9000 : 7000), 1800);
+}
 updateHud();
 requestAnimationFrame(() => playDeal());
 })();
